@@ -16,25 +16,31 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import datetime as dt
-
+#
+"""
+### My great DAG
+"""
 import airflow
-from airflow.models import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.latest_only_operator import LatestOnlyOperator
-from airflow.utils.trigger_rule import TriggerRule
+from airflow import DAG
+from airflow.operators.bash_operator import BashOperator
 
-dag = DAG(
-    dag_id='example_latest_only_with_trigger',
-    schedule_interval=None,
-    start_date=airflow.utils.dates.days_ago(2),
+default_args = {
+    'owner': 'airflow',
+    'start_date': airflow.utils.dates.days_ago(2),
+}
+
+# [START concepts_documentation]
+dag = DAG('example_documentation', default_args=default_args, schedule_interval=None)
+dag.doc_md = __doc__
+
+t = BashOperator(
+    bash_command="echo 1",
+    dag=dag,
+    task_id='bash_doc',
 )
+t.doc_md = """\
+    #Title"
+    Here's a [url](www.airbnb.com)
+    """
 
-latest_only = LatestOnlyOperator(task_id='latest_only', dag=dag)
-task1 = DummyOperator(task_id='task1', dag=dag)
-task2 = DummyOperator(task_id='task2', dag=dag)
-task3 = DummyOperator(task_id='task3', dag=dag)
-task4 = DummyOperator(task_id='task4', dag=dag, trigger_rule=TriggerRule.ALL_DONE)
-
-latest_only >> task1 >> [task3, task4]
-task2 >> [task3, task4]
+# [END concepts_documentation]

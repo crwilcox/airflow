@@ -449,84 +449,26 @@ Viewer
 ^^^^^^
 ``Viewer`` users have limited viewer permissions
 
-.. code:: python
-
-    VIEWER_PERMS = {
-        'menu_access',
-        'can_index',
-        'can_list',
-        'can_show',
-        'can_chart',
-        'can_dag_stats',
-        'can_dag_details',
-        'can_task_stats',
-        'can_code',
-        'can_log',
-        'can_get_logs_with_metadata',
-        'can_tries',
-        'can_graph',
-        'can_tree',
-        'can_task',
-        'can_task_instances',
-        'can_xcom',
-        'can_gantt',
-        'can_landing_times',
-        'can_duration',
-        'can_blocked',
-        'can_rendered',
-        'can_pickle_info',
-        'can_version',
-    }
+.. literalinclude:: ../airflow/www/security.py
+    :language: python
+    :start-after: [START security_viewer_perms]
+    :end-before: [END security_viewer_perms]
 
 on limited web views
 
-.. code:: python
-
-    VIEWER_VMS = {
-        'Airflow',
-        'DagModelView',
-        'Browse',
-        'DAG Runs',
-        'DagRunModelView',
-        'Task Instances',
-        'TaskInstanceModelView',
-        'SLA Misses',
-        'SlaMissModelView',
-        'Jobs',
-        'JobModelView',
-        'Logs',
-        'LogModelView',
-        'Docs',
-        'Documentation',
-        'GitHub',
-        'About',
-        'Version',
-        'VersionView',
-    }
+.. literalinclude:: ../airflow/www/security.py
+    :language: python
+    :start-after: [START security_viewer_vms]
+    :end-before: [END security_viewer_vms]
 
 User
 ^^^^
 ``User`` users have ``Viewer`` permissions plus additional user permissions
 
-.. code:: python
-
-    USER_PERMS = {
-        'can_dagrun_clear',
-        'can_run',
-        'can_trigger',
-        'can_add',
-        'can_edit',
-        'can_delete',
-        'can_paused',
-        'can_refresh',
-        'can_success',
-        'muldelete',
-        'set_failed',
-        'set_running',
-        'set_success',
-        'clear',
-        'can_clear',
-    }
+.. literalinclude:: ../airflow/www/security.py
+    :language: python
+    :start-after: [START security_user_perms]
+    :end-before: [END security_user_perms]
 
 
 on User web views which is the same as Viewer web views.
@@ -535,30 +477,20 @@ Op
 ^^
 ``Op`` users have ``User`` permissions plus additional op permissions
 
-.. code:: python
 
-    OP_PERMS = {
-        'can_conf',
-        'can_varimport',
-    }
+.. literalinclude:: ../airflow/www/security.py
+    :language: python
+    :start-after: [START security_op_perms]
+    :end-before: [END security_op_perms]
+
 
 on ``User`` web views plus these additional op web views
 
-.. code:: python
 
-    OP_VMS = {
-        'Admin',
-        'Configurations',
-        'ConfigurationView',
-        'Connections',
-        'ConnectionModelView',
-        'Pools',
-        'PoolModelView',
-        'Variables',
-        'VariableModelView',
-        'XComs',
-        'XComModelView',
-    }
+.. literalinclude:: ..//airflow/www/security.py
+    :language: python
+    :start-after: [START security_op_vms]
+    :end-before: [END security_op_vms]
 
 Custom Roles
 '''''''''''''

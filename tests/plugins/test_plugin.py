@@ -17,6 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# [START plugins_interface]
 # This is the class you derive to create a plugin
 from airflow.plugins_manager import AirflowPlugin
 
@@ -95,7 +96,7 @@ class AirflowTestPlugin(AirflowPlugin):
     flask_blueprints = [bp]
     appbuilder_views = [v_appbuilder_package]
     appbuilder_menu_items = [appbuilder_mitem]
-
+# [END plugins_interface]
 
 class MockPluginA(AirflowPlugin):
     name = 'plugin-a'

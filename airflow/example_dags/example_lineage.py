@@ -17,68 +17,42 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from builtins import range
+# [START lineage]
 from datetime import timedelta
 
 import airflow
-from airflow.models import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.lineage.datasets import File
+from airflow.models import DAG
 
-args = {
-    'owner': 'airflow',
-    'start_date': airflow.utils.dates.days_ago(2),
-}
+FILE_CATEGORIES = ["CAT1", "CAT2", "CAT3"]
+
+args = {"owner": "airflow", "start_date": airflow.utils.dates.days_ago(2)}
 
 dag = DAG(
-    dag_id='example_bash_operator',
+    dag_id="example_lineage",
     default_args=args,
-    schedule_interval='0 0 * * *',
+    schedule_interval=None,
     dagrun_timeout=timedelta(minutes=60),
 )
 
+f_final = File("/tmp/final")
 run_this_last = DummyOperator(
-    task_id='run_this_last',
-    dag=dag,
+    task_id="run_this_last", dag=dag, inlets={"auto": True}, outlets={"datasets": [f_final]}
 )
 
-# [START howto_operator_bash]
+f_in = File("/tmp/whole_directory/")
+outlets = []
+for file in FILE_CATEGORIES:
+    f_out = File("/tmp/{}/{{{{ execution_date }}}}".format(file))
+    outlets.append(f_out)
 run_this = BashOperator(
-    task_id='run_after_loop',
-    bash_command='echo 1',
+    task_id="run_me_first",
+    bash_command="echo 1",
     dag=dag,
+    inlets={"datasets": [f_in]},
+    outlets={"datasets": outlets},
 )
-# [END howto_operator_bash]
-
-run_this >> run_this_last
-
-for i in range(3):
-    task = BashOperator(
-        task_id='runme_' + str(i),
-        bash_command='echo "{{ task_instance_key_str }}" && sleep 1',
-        dag=dag,
-    )
-    task >> run_this
-
-# [START howto_operator_bash_template]
-also_run_this = BashOperator(
-    task_id='also_run_this',
-    bash_command='echo "run_id={{ run_id }} | dag_run={{ dag_run }}"',
-    dag=dag,
-)
-# [END howto_operator_bash_template]
-also_run_this >> run_this_last
-
-
-# [START concepts_jinja_templating]
-# The execution date as YYYY-MM-DD
-t = BashOperator(
-    task_id='test_env',
-    bash_command='/tmp/test.sh ',
-    dag=dag,
-    env={'EXECUTION_DATE': "{{ ds }}"}
-)
-# [END concepts_jinja_templating]
-
-if __name__ == "__main__":
-    dag.cli()
+run_this.set_downstream(run_this_last)
+# [END lineage]

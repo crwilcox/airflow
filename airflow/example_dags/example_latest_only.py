@@ -27,8 +27,8 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.latest_only_operator import LatestOnlyOperator
 
 dag = DAG(
-    dag_id='latest_only',
-    schedule_interval=dt.timedelta(hours=4),
+    dag_id='example_latest_only',
+    schedule_interval=None,
     start_date=airflow.utils.dates.days_ago(2),
 )
 

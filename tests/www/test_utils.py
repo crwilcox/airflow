@@ -16,7 +16,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
 from datetime import datetime
 
 from bs4 import BeautifulSoup
@@ -25,6 +24,7 @@ import six
 from six.moves.urllib.parse import parse_qs
 
 from airflow.www import utils
+from airflow.www.utils import render_attrs
 
 if six.PY2:
     # Need `assertRegex` back-ported from unittest2
@@ -34,6 +34,7 @@ else:
 
 
 class UtilsTest(unittest.TestCase):
+
     def test_empty_variable_should_not_be_hidden(self):
         self.assertFalse(utils.should_hide_value_for_key(""))
         self.assertFalse(utils.should_hide_value_for_key(None))
@@ -250,3 +251,15 @@ class AttrRendererTest(unittest.TestCase):
     def test_markdown_none(self):
         rendered = self.attr_renderer["python_callable"](None)
         self.assertEqual("", rendered)
+
+    def test_render_attrs_for_task(self):
+        from airflow.example_dags import example_documentation
+        attrs = render_attrs(example_documentation.t)
+        self.assertEquals(attrs['doc_md'], '<div class="rich_doc"><pre><code>#Title"\n'
+                                           "Here's a [url](www.airbnb.com)\n"
+                                           '</code></pre></div>')
+
+    def test_render_attrs_for_dag(self):
+        from airflow.example_dags import example_documentation
+        attrs = render_attrs(example_documentation.dag)
+        self.assertEquals(attrs['doc_md'], '<div class="rich_doc"><h3>My great DAG</h3></div>')

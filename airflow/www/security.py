@@ -32,6 +32,7 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 ###########################################################################
 #                               VIEW MENUS
 ###########################################################################
+# [START security_viewer_vms]
 VIEWER_VMS = {
     'Airflow',
     'DagModelView',
@@ -53,9 +54,11 @@ VIEWER_VMS = {
     'Version',
     'VersionView',
 }
+# [END security_viewer_vms]
 
 USER_VMS = VIEWER_VMS
 
+# [START security_op_vms]
 OP_VMS = {
     'Admin',
     'Configurations',
@@ -69,11 +72,13 @@ OP_VMS = {
     'XComs',
     'XComModelView',
 }
+# [END security_op_vms]
 
 ###########################################################################
 #                               PERMISSIONS
 ###########################################################################
 
+# [START security_viewer_perms]
 VIEWER_PERMS = {
     'menu_access',
     'can_index',
@@ -100,7 +105,9 @@ VIEWER_PERMS = {
     'can_pickle_info',
     'can_version',
 }
+# [END security_viewer_perms]
 
+# [START security_user_perms]
 USER_PERMS = {
     'can_dagrun_clear',
     'can_run',
@@ -118,17 +125,21 @@ USER_PERMS = {
     'clear',
     'can_clear',
 }
+# [END security_user_perms]
 
+# [START security_op_perms]
 OP_PERMS = {
     'can_conf',
     'can_varimport',
 }
+# [END security_op_perms]
 
 # global view-menu for dag-level access
 DAG_VMS = {
     'all_dags'
 }
 
+# [START security_dag_perms]
 WRITE_DAG_PERMS = {
     'can_dag_edit',
 }
@@ -138,6 +149,7 @@ READ_DAG_PERMS = {
 }
 
 DAG_PERMS = WRITE_DAG_PERMS | READ_DAG_PERMS
+# [END security_dag_perms]
 
 ###########################################################################
 #                     DEFAULT ROLE CONFIGURATIONS
