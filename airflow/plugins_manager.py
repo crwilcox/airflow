@@ -45,14 +45,6 @@ class AirflowPluginException(Exception):
 
 # [START plugins_interface]
 class AirflowPlugin(object):
-    hooks = []
-    executors = []
-    macros = []
-    admin_views = []
-    flask_blueprints = []
-    menu_links = []
-    appbuilder_views = []
-    appbuilder_menu_items = []
     # The name of your plugin (str)
     name = None  # type: str
     # A list of class(es) derived from BaseOperator

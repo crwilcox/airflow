@@ -36,24 +36,31 @@ from airflow import models, AirflowException, example_dags, DAG
 class ExampleDagsTestCase(unittest.TestCase):
 
     @parameterized.expand([
-        # ("example_branch_operator.py", 'example_branch_operator', ),
-        # ('example_branch_dop_operator_3.py', 'example_branch_dop_operator_v3', ),
+        ("example_branch_operator.py", 'example_branch_operator', ),
+        ('example_branch_dop_operator_3.py', 'example_branch_dop_operator_v3', ),
+        # BROKEN
         # ('example_default_args.py', 'example_default_args'),
-        # ('example_dynamic_dag.py', 'foo_1', ),
-        # ('example_dynamic_dag.py', 'foo_10', ),
+        ('example_dynamic_dag.py', 'foo_0', ),
+        ('example_dynamic_dag.py', 'foo_9', ),
+        # BROKEN
         # ('example_http_operator.py', 'example_http_operator', ),
+        # BROKEN
         # ('example_latest_only.py', 'example_latest_only', ),
+        # BROKEN
         # ('example_latest_only_with_trigger.py', 'example_latest_only_with_trigger', ),
-        # ('example_lineage.py', 'example_lineage', ),
+        ('example_lineage.py', 'example_lineage', ),
+        # BROKEN
         # ('example_passing_params_via_test_command.py', 'example_passing_params_via_test_command', ),
-        # ('example_python_operator.py','example_python_operator', ),
-        # ('example_short_circuit_operator.py','example_short_circuit_operator', ),
-        # ('example_skip_dag.py', 'example_skip_dag', ),
-        # ('example_subdag_operator.py', 'example_subdag_operator', ),
-        ('example_trigger_controller_dag.py', 'example_trigger_controller', ),
+        ('example_python_operator.py', 'example_python_operator', ),
+        ('example_short_circuit_operator.py', 'example_short_circuit_operator', ),
+        ('example_skip_dag.py', 'example_skip_dag', ),
+        ('example_subdag_operator.py', 'example_subdag_operator', ),
+        # BROKEN
+        # ('example_trigger_controller_dag.py', 'example_trigger_controller', ),
+        # BROKEN
         # ('example_trigger_target_dag.py', 'example_trigger_target_dag', ),
-        # ("example_xcom.py", 'example_xcom', ),
-    ], name_func=lambda func, num, p: "{}_{}".format(func.__name__, p.args[0]))
+        ("example_xcom.py", 'example_xcom', ),
+    ], name_func=lambda func, num, p: "{}_{}".format(func.__name__, p.args[1]))
     def test_run_dag(self, filename, dag_id):
         dag_folder = example_dags.__path__[0]
         dag_bag = models.DagBag(dag_folder=os.path.join(dag_folder, filename), include_examples=False)
@@ -62,7 +69,7 @@ class ExampleDagsTestCase(unittest.TestCase):
             raise AirflowException(
                 "The Dag {dag_id} could not be found. It's either an import problem or the dag was not "
                 "symlinked to the DAGs folder. The content of the {dag_folder} folder is {dags_list}".format(
-                     dag_id=dag_id, dag_folder=dag_folder, dags_list=os.listdir(dag_folder)
+                    dag_id=dag_id, dag_folder=dag_folder, dags_list=os.listdir(dag_folder)
                 )
             )
         dag.clear(reset_dag_runs=True)

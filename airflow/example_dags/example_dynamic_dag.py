@@ -18,10 +18,18 @@
 # under the License.
 
 # [START faq_dynamic_dag]
+import airflow
 from airflow import DAG
+from airflow.operators.dummy_operator import DummyOperator
 
 for i in range(10):
     dag_id = 'foo_{}'.format(i)
-    globals()[dag_id] = DAG(dag_id)
+    dag = DAG(dag_id=dag_id, start_date=airflow.utils.dates.days_ago(2))
+
+    task = DummyOperator(
+        task_id='tqwk_ie', dag=dag
+    )
+
+    globals()[dag_id] = dag
     # or better, call a function that returns a DAG object!
 # [END faq_dynamic_dag]

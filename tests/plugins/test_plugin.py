@@ -98,6 +98,7 @@ class AirflowTestPlugin(AirflowPlugin):
     appbuilder_menu_items = [appbuilder_mitem]
 # [END plugins_interface]
 
+
 class MockPluginA(AirflowPlugin):
     name = 'plugin-a'
 
