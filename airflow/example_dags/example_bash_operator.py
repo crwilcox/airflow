@@ -72,13 +72,15 @@ also_run_this >> run_this_last
 
 # [START concepts_jinja_templating]
 # The execution date as YYYY-MM-DD
-t = BashOperator(
+test_env = BashOperator(
     task_id='test_env',
     bash_command='/tmp/test.sh ',
     dag=dag,
     env={'EXECUTION_DATE': "{{ ds }}"}
 )
 # [END concepts_jinja_templating]
+also_run_this >> test_env
+
 
 if __name__ == "__main__":
     dag.cli()
