@@ -23,7 +23,7 @@ from google.cloud.vision_v1 import ProductSearchClient
 from google.protobuf.json_format import MessageToDict
 
 from airflow import AirflowException
-from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
+from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook, fallback_to_default_project_id
 
 
 class NameDeterminer:
@@ -114,7 +114,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
             self._client = ProductSearchClient(credentials=self._get_credentials())
         return self._client
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def create_product_set(
         self,
         location,
@@ -151,7 +151,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
 
         return product_set_id
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def get_product_set(
         self, location, product_set_id, project_id=None, retry=None, timeout=None, metadata=None
     ):
@@ -173,7 +173,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('ProductSet retrieved:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def update_product_set(
         self,
         product_set,
@@ -206,7 +206,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('ProductSet updated:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def delete_product_set(
         self, location, product_set_id, project_id=None, retry=None, timeout=None, metadata=None
     ):
@@ -227,7 +227,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.info('ProductSet with the name [%s] deleted.', name)
         return response
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def create_product(
         self, location, product, project_id=None, product_id=None, retry=None, timeout=None, metadata=None
     ):
@@ -257,7 +257,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
 
         return product_id
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def get_product(self, location, product_id, project_id=None, retry=None, timeout=None, metadata=None):
         """
         For the documentation see:
@@ -277,7 +277,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('Product retrieved:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def update_product(
         self,
         product,
@@ -308,7 +308,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('Product updated:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @fallback_to_default_project_id
     def delete_product(self, location, product_id, project_id=None, retry=None, timeout=None, metadata=None):
         """
         For the documentation see:
