@@ -960,7 +960,7 @@ powerful tool to use in combination with macros (see the :ref:`macros` section).
 For example, say you want to pass the execution date as an environment variable
 to a Bash script using the ``BashOperator``.
 
-.. literalinclude:: ./airflow/example_dags/example_bash_operator.py
+.. literalinclude:: ../airflow/example_dags/example_bash_operator.py
     :language: python
     :start-after: [START concepts_jinja_templating]
     :end-before: [END concepts_jinja_templating]

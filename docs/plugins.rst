@@ -70,7 +70,7 @@ To create a plugin you will need to derive the
 you want to plug into Airflow. Here's what the class you need to derive
 looks like:
 
-.. literalinclude:: ../../../airflow/plugins_manager.py
+.. literalinclude:: ../airflow/plugins_manager.py
     :language: python
     :start-after: [START plugins_interface]
     :end-before: [END plugins_interface]
@@ -104,7 +104,7 @@ Example
 The code below defines a plugin that injects a set of dummy object
 definitions in Airflow.
 
-.. literalinclude:: ../airflow/tests/plugins/test_plugin.py
+.. literalinclude:: ../tests/plugins/test_plugin.py
     :language: python
     :start-after: [START plugins_example]
     :end-before: [END plugins_example]

@@ -42,7 +42,7 @@ The volumes are optional and depend on your configuration. There are two volumes
 Kubernetes Operator
 ^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../airflow/example_dags/example_kubernetes.py
+.. literalinclude:: ../airflow/contrib/example_dags/example_kubernetes_operator.py
     :language: python
     :start-after: [START kubernetes_operator]
     :end-before: [END kubernetes_operator]
