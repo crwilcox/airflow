@@ -17,8 +17,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import tenacity
+from google.api_core.exceptions import Forbidden
 from google.cloud.translate_v2 import Client
+
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
+
+
+class retry_if_temporary_quota(tenacity.retry_if_exception):
+    """Retries if there was an exception for exceeding the temporary quota."""
+
+    def __init__(self):
+        def is_soft_quota_exception(exception):
+            if not isinstance(exception, Forbidden):
+                return False
+            reasons = [exception["reason"] for exception in exception.errors]
+            return "userRateLimitExceeded" in reasons
+
+        super(retry_if_temporary_quota, self).__init__(is_soft_quota_exception)
 
 
 class CloudTranslateHook(GoogleCloudBaseHook):
@@ -36,15 +52,14 @@ class CloudTranslateHook(GoogleCloudBaseHook):
         Retrieves connection to Cloud Translate
 
         :return: Google Cloud Translate client object.
-        :rtype: Client
+        :rtype: google.cloud.translate_v2.Client
         """
         if not self._client:
             self._client = Client(credentials=self._get_credentials())
         return self._client
 
-    def translate(
-        self, values, target_language, format_=None, source_language=None, model=None
-    ):
+    @tenacity.retry(wait=tenacity.wait_exponential(multiplier=1, max=100), retry=retry_if_temporary_quota())
+    def translate(self, values, target_language, format_=None, source_language=None, model=None):
         """Translate a string or list of strings.
 
         See https://cloud.google.com/translate/docs/translating-text
