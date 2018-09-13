@@ -43,16 +43,18 @@ class GoogleCloudBaseHook(BaseHook, LoggingMixin):
     The class also contains some miscellaneous helper functions.
 
     All hook derived from this base hook use the 'Google Cloud Platform' connection
-    type. Two ways of authentication are supported:
+    type. Three ways of authentication are supported:
 
     Default credentials: Only the 'Project Id' is required. You'll need to
     have set up default credentials, such as by the
     ``GOOGLE_APPLICATION_DEFAULT`` environment variable or from the metadata
     server on Google Compute Engine.
 
-    JSON key file: Specify 'Project Id', 'Key Path' and 'Scope'.
+    JSON key file: Specify 'Project Id', 'Keyfile Path' and 'Scope'.
 
     Legacy P12 key files are not supported.
+
+    JSON data provided in the UI: Specify 'Keyfile JSON'.
     """
 
     def __init__(self, gcp_conn_id='google_cloud_default', delegate_to=None):

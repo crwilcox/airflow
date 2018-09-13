@@ -29,6 +29,9 @@ from airflow.version import version
 
 from copy import deepcopy
 
+from tests.contrib.operators.test_gcp_base import BaseGcpIntegrationTestCase, \
+    GCP_FUNCTION_KEY, SKIP_TEST_WARNING
+
 try:
     # noinspection PyProtectedMember
     from unittest import mock
@@ -192,7 +195,6 @@ class GcfFunctionDeployTest(unittest.TestCase):
     ])
     @mock.patch('airflow.contrib.operators.gcp_function_operator.GcfHook')
     def test_correct_runtime_field(self, runtime, mock_hook):
-        mock_hook.return_value.list_functions.return_value = []
         mock_hook.return_value.create_new_function.return_value = True
         body = deepcopy(VALID_BODY)
         body['runtime'] = runtime
@@ -217,7 +219,6 @@ class GcfFunctionDeployTest(unittest.TestCase):
     ])
     @mock.patch('airflow.contrib.operators.gcp_function_operator.GcfHook')
     def test_valid_network_field(self, network, mock_hook):
-        mock_hook.return_value.list_functions.return_value = []
         mock_hook.return_value.create_new_function.return_value = True
         body = deepcopy(VALID_BODY)
         body['network'] = network
@@ -241,7 +242,6 @@ class GcfFunctionDeployTest(unittest.TestCase):
     ])
     @mock.patch('airflow.contrib.operators.gcp_function_operator.GcfHook')
     def test_valid_labels_field(self, labels, mock_hook):
-        mock_hook.return_value.list_functions.return_value = []
         mock_hook.return_value.create_new_function.return_value = True
         body = deepcopy(VALID_BODY)
         body['labels'] = labels
@@ -258,7 +258,6 @@ class GcfFunctionDeployTest(unittest.TestCase):
 
     @mock.patch('airflow.contrib.operators.gcp_function_operator.GcfHook')
     def test_validation_disabled(self, mock_hook):
-        mock_hook.return_value.list_functions.return_value = []
         mock_hook.return_value.create_new_function.return_value = True
         body = {
             "name": "function_name",
@@ -278,7 +277,6 @@ class GcfFunctionDeployTest(unittest.TestCase):
 
     @mock.patch('airflow.contrib.operators.gcp_function_operator.GcfHook')
     def test_body_validation_simple(self, mock_hook):
-        mock_hook.return_value.list_functions.return_value = []
         mock_hook.return_value.create_new_function.return_value = True
         body = deepcopy(VALID_BODY)
         body['name'] = ''
@@ -315,7 +313,6 @@ class GcfFunctionDeployTest(unittest.TestCase):
     ])
     @mock.patch('airflow.contrib.operators.gcp_function_operator.GcfHook')
     def test_invalid_field_values(self, key, value, message, mock_hook):
-        mock_hook.return_value.list_functions.return_value = []
         mock_hook.return_value.create_new_function.return_value = True
         body = deepcopy(VALID_BODY)
         body[key] = value
@@ -521,7 +518,6 @@ class GcfFunctionDeployTest(unittest.TestCase):
 
     @mock.patch('airflow.contrib.operators.gcp_function_operator.GcfHook')
     def test_extra_parameter(self, mock_hook):
-        mock_hook.return_value.list_functions.return_value = []
         mock_hook.return_value.create_new_function.return_value = True
         body = deepcopy(VALID_BODY)
         body['extra_parameter'] = 'extra'
@@ -639,3 +635,16 @@ class GcfFunctionDeleteTest(unittest.TestCase):
         mock_hook.return_value.delete_function.assert_called_once_with(
             'projects/project_name/locations/project_location/functions/function_name'
         )
+
+
+@unittest.skipIf(
+    BaseGcpIntegrationTestCase.skip_check(GCP_FUNCTION_KEY), SKIP_TEST_WARNING)
+class GcpFunctionExampleDagsIntegrationTest(BaseGcpIntegrationTestCase):
+    def __init__(self, method_name='runTest'):
+        super(GcpFunctionExampleDagsIntegrationTest, self).__init__(
+            method_name,
+            dag_id='example_gcp_function',
+            gcp_key=GCP_FUNCTION_KEY)
+
+    def test_run_example_dag_cloudsql_query(self):
+        self._run_dag()
