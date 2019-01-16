@@ -144,7 +144,7 @@ class GoogleCloudStorageToBigQueryOperator(BaseOperator):
                  allow_quoted_newlines=False,
                  allow_jagged_rows=False,
                  max_id_key=None,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  google_cloud_storage_conn_id='google_cloud_default',
                  delegate_to=None,
                  schema_update_options=(),
@@ -194,7 +194,7 @@ class GoogleCloudStorageToBigQueryOperator(BaseOperator):
         self.autodetect = autodetect
 
     def execute(self, context):
-        bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        bq_hook = BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                                delegate_to=self.delegate_to)
 
         if not self.schema_fields:

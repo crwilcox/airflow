@@ -46,7 +46,7 @@ class BigQueryTableDeleteOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                  deletion_dataset_table,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  delegate_to=None,
                  ignore_if_missing=False,
                  *args,
@@ -59,7 +59,7 @@ class BigQueryTableDeleteOperator(BaseOperator):
 
     def execute(self, context):
         self.log.info('Deleting: %s', self.deletion_dataset_table)
-        hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        hook = BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                             delegate_to=self.delegate_to)
         conn = hook.get_conn()
         cursor = conn.cursor()

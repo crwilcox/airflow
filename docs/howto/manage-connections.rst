@@ -100,26 +100,11 @@ There are two ways to connect to GCP using Airflow.
    <https://cloud.google.com/docs/authentication/#service_accounts>`_ key
    file (JSON format) on disk.
 
-Default Connection IDs
+Default Connection ID
 ''''''''''''''''''''''
 
-The following connection IDs are used by default.
+All hooks related related to Google Cloud Platform use ``google_cloud_default``
 
-``bigquery_default``
-    Used by the :class:`~airflow.contrib.hooks.bigquery_hook.BigQueryHook`
-    hook.
-
-``google_cloud_datastore_default``
-    Used by the :class:`~airflow.contrib.hooks.datastore_hook.DatastoreHook`
-    hook.
-
-``google_cloud_default``
-    Used by the
-    :class:`~airflow.contrib.hooks.gcp_api_base_hook.GoogleCloudBaseHook`,
-    :class:`~airflow.contrib.hooks.gcp_dataflow_hook.DataFlowHook`,
-    :class:`~airflow.contrib.hooks.gcp_dataproc_hook.DataProcHook`,
-    :class:`~airflow.contrib.hooks.gcp_mlengine_hook.MLEngineHook`, and
-    :class:`~airflow.contrib.hooks.gcs_hook.GoogleCloudStorageHook` hooks.
 
 Configuring the Connection
 ''''''''''''''''''''''''''

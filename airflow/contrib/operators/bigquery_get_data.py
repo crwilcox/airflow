@@ -76,7 +76,7 @@ class BigQueryGetDataOperator(BaseOperator):
                  table_id,
                  max_results='100',
                  selected_fields=None,
-                 bigquery_conn_id='bigquery_default',
+                 gcp_conn_id='google_cloud_default',
                  delegate_to=None,
                  *args,
                  **kwargs):
@@ -85,7 +85,7 @@ class BigQueryGetDataOperator(BaseOperator):
         self.table_id = table_id
         self.max_results = max_results
         self.selected_fields = selected_fields
-        self.bigquery_conn_id = bigquery_conn_id
+        self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
 
     def execute(self, context):
@@ -93,7 +93,7 @@ class BigQueryGetDataOperator(BaseOperator):
         self.log.info('Dataset: %s ; Table: %s ; Max Results: %s',
                       self.dataset_id, self.table_id, self.max_results)
 
-        hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id,
                             delegate_to=self.delegate_to)
 
         conn = hook.get_conn()

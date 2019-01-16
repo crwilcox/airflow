@@ -50,7 +50,7 @@ class BigQueryTableSensor(BaseSensorOperator):
                  project_id,
                  dataset_id,
                  table_id,
-                 bigquery_conn_id='bigquery_default_conn',
+                 bigquery_conn_id='google_default_conn',
                  delegate_to=None,
                  *args, **kwargs):
 
@@ -65,6 +65,6 @@ class BigQueryTableSensor(BaseSensorOperator):
         table_uri = '{0}:{1}.{2}'.format(self.project_id, self.dataset_id, self.table_id)
         self.log.info('Sensor checks existence of table: %s', table_uri)
         hook = BigQueryHook(
-            bigquery_conn_id=self.bigquery_conn_id,
+            gcp_conn_id=self.bigquery_conn_id,
             delegate_to=self.delegate_to)
         return hook.table_exists(self.project_id, self.dataset_id, self.table_id)

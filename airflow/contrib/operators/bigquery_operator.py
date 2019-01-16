@@ -114,7 +114,7 @@ class BigQueryOperator(BaseOperator):
                  write_disposition='WRITE_EMPTY',
                  allow_large_results=False,
                  flatten_results=None,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  delegate_to=None,
                  udf_config=None,
                  use_legacy_sql=True,
@@ -158,7 +158,7 @@ class BigQueryOperator(BaseOperator):
         if self.bq_cursor is None:
             self.log.info('Executing: %s', self.sql)
             hook = BigQueryHook(
-                bigquery_conn_id=self.bigquery_conn_id,
+                gcp_conn_id=self.bigquery_conn_id,
                 use_legacy_sql=self.use_legacy_sql,
                 delegate_to=self.delegate_to,
                 location=self.location,
@@ -292,7 +292,7 @@ class BigQueryCreateEmptyTableOperator(BaseOperator):
                  schema_fields=None,
                  gcs_schema_object=None,
                  time_partitioning=None,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  google_cloud_storage_conn_id='google_cloud_default',
                  delegate_to=None,
                  labels=None,
@@ -312,7 +312,7 @@ class BigQueryCreateEmptyTableOperator(BaseOperator):
         self.labels = labels
 
     def execute(self, context):
-        bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        bq_hook = BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                                delegate_to=self.delegate_to)
 
         if not self.schema_fields and self.gcs_schema_object:
@@ -432,7 +432,7 @@ class BigQueryCreateExternalTableOperator(BaseOperator):
                  quote_character=None,
                  allow_quoted_newlines=False,
                  allow_jagged_rows=False,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  google_cloud_storage_conn_id='google_cloud_default',
                  delegate_to=None,
                  src_fmt_configs={},
@@ -466,7 +466,7 @@ class BigQueryCreateExternalTableOperator(BaseOperator):
         self.labels = labels
 
     def execute(self, context):
-        bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        bq_hook = BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                                delegate_to=self.delegate_to)
 
         if not self.schema_fields and self.schema_object \
@@ -528,7 +528,7 @@ class BigQueryDeleteDatasetOperator(BaseOperator):
     def __init__(self,
                  dataset_id,
                  project_id=None,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_clouddefault',
                  delegate_to=None,
                  *args, **kwargs):
         self.dataset_id = dataset_id
@@ -542,7 +542,7 @@ class BigQueryDeleteDatasetOperator(BaseOperator):
         super(BigQueryDeleteDatasetOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
-        bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        bq_hook = BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                                delegate_to=self.delegate_to)
 
         conn = bq_hook.get_conn()
@@ -590,7 +590,7 @@ class BigQueryCreateEmptyDatasetOperator(BaseOperator):
                  dataset_id,
                  project_id=None,
                  dataset_reference=None,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  delegate_to=None,
                  *args, **kwargs):
         self.dataset_id = dataset_id
@@ -605,7 +605,7 @@ class BigQueryCreateEmptyDatasetOperator(BaseOperator):
         super(BigQueryCreateEmptyDatasetOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
-        bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        bq_hook = BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                                delegate_to=self.delegate_to)
 
         conn = bq_hook.get_conn()

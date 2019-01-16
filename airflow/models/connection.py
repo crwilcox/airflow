@@ -180,7 +180,7 @@ class Connection(Base, LoggingMixin):
                 return MySqlHook(mysql_conn_id=self.conn_id)
             elif self.conn_type == 'google_cloud_platform':
                 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
-                return BigQueryHook(bigquery_conn_id=self.conn_id)
+                return BigQueryHook(gcp_conn_id=self.conn_id)
             elif self.conn_type == 'postgres':
                 from airflow.hooks.postgres_hook import PostgresHook
                 return PostgresHook(postgres_conn_id=self.conn_id)

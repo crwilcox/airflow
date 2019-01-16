@@ -49,15 +49,15 @@ class BigQueryHook(GoogleCloudBaseHook, DbApiHook, LoggingMixin):
     Interact with BigQuery. This hook uses the Google Cloud Platform
     connection.
     """
-    conn_name_attr = 'bigquery_conn_id'
+    conn_name_attr = 'gcp_conn_id'
 
     def __init__(self,
-                 bigquery_conn_id='bigquery_default',
+                 gcp_conn_id='google_cloud_default',
                  delegate_to=None,
                  use_legacy_sql=True,
                  location=None):
         super(BigQueryHook, self).__init__(
-            gcp_conn_id=bigquery_conn_id, delegate_to=delegate_to)
+            gcp_conn_id=gcp_conn_id, delegate_to=delegate_to)
         self.use_legacy_sql = use_legacy_sql
         self.location = location
 

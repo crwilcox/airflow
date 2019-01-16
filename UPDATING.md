@@ -24,6 +24,15 @@ assists users migrating to a new version.
 
 ## Airflow Master
 
+#### Change default conn_id to Google Cloud Platform
+
+Previously not all hooks and operators related to Google Cloud Platform use
+``google_cloud_default`` as a default conn_id. There is currently one default
+variant. Values like ``bigquery_default``, ``google_cloud_datastore_default`` 
+have been abandoned. The configuration of connections in the database have
+been preserved, but in every place where they were used, they should be
+indicated explicit.
+
 ### Deprecate legacy UI in favor of FAB RBAC UI
 Previously we were using two versions of UI, which were hard to maintain as we need to implement/update the same feature
 in both versions. With this change we've removed the older UI in favor of Flask App Builder RBAC UI. No need to set the 

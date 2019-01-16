@@ -71,7 +71,7 @@ class BigQueryToCloudStorageOperator(BaseOperator):
                  export_format='CSV',
                  field_delimiter=',',
                  print_header=True,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  delegate_to=None,
                  labels=None,
                  *args,
@@ -91,7 +91,7 @@ class BigQueryToCloudStorageOperator(BaseOperator):
         self.log.info('Executing extract of %s into: %s',
                       self.source_project_dataset_table,
                       self.destination_cloud_storage_uris)
-        hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        hook = BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                             delegate_to=self.delegate_to)
         conn = hook.get_conn()
         cursor = conn.cursor()

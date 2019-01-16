@@ -63,7 +63,7 @@ class BigQueryCheckOperator(CheckOperator):
     @apply_defaults
     def __init__(self,
                  sql,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  use_legacy_sql=True,
                  *args, **kwargs):
         super(BigQueryCheckOperator, self).__init__(sql=sql, *args, **kwargs)
@@ -72,7 +72,7 @@ class BigQueryCheckOperator(CheckOperator):
         self.use_legacy_sql = use_legacy_sql
 
     def get_db_hook(self):
-        return BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        return BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                             use_legacy_sql=self.use_legacy_sql)
 
 
@@ -91,7 +91,7 @@ class BigQueryValueCheckOperator(ValueCheckOperator):
     def __init__(self, sql,
                  pass_value,
                  tolerance=None,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  use_legacy_sql=True,
                  *args, **kwargs):
         super(BigQueryValueCheckOperator, self).__init__(
@@ -101,7 +101,7 @@ class BigQueryValueCheckOperator(ValueCheckOperator):
         self.use_legacy_sql = use_legacy_sql
 
     def get_db_hook(self):
-        return BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        return BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                             use_legacy_sql=self.use_legacy_sql)
 
 
@@ -131,7 +131,7 @@ class BigQueryIntervalCheckOperator(IntervalCheckOperator):
 
     @apply_defaults
     def __init__(self, table, metrics_thresholds, date_filter_column='ds',
-                 days_back=-7, bigquery_conn_id='bigquery_default',
+                 days_back=-7, bigquery_conn_id='google_cloud_default',
                  use_legacy_sql=True, *args, **kwargs):
         super(BigQueryIntervalCheckOperator, self).__init__(
             table=table, metrics_thresholds=metrics_thresholds,
@@ -141,5 +141,5 @@ class BigQueryIntervalCheckOperator(IntervalCheckOperator):
         self.use_legacy_sql = use_legacy_sql
 
     def get_db_hook(self):
-        return BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
+        return BigQueryHook(gcp_conn_id=self.bigquery_conn_id,
                             use_legacy_sql=self.use_legacy_sql)
