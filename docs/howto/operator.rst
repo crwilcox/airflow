@@ -544,7 +544,7 @@ BigtableTableWaitForReplicationSensor
 You can create the operator with or without project id. If project id is missing
 it will be retrieved from the GCP connection used. Both variants are shown:
 
-Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigtableTableWaitForReplicationSensor`
+Use the :class:`~airflow.contrib.sensors.gcp_bigtable_sensor.BigtableTableWaitForReplicationSensor`
 to wait for the table to replicate fully.
 
 The same arguments apply to this sensor as the BigtableTableCreateOperator_.

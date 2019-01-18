@@ -57,9 +57,9 @@ from airflow.contrib.operators.gcp_bigtable_operator import \
     BigtableInstanceDeleteOperator, \
     BigtableClusterUpdateOperator, \
     BigtableTableCreateOperator, \
-    BigtableTableWaitForReplicationSensor, \
     BigtableTableDeleteOperator
-
+from airflow.contrib.sensors.gcp_bigtable_sensor import \
+    BigtableTableWaitForReplicationSensor
 # [START howto_operator_gcp_bigtable_args]
 GCP_PROJECT_ID = getenv('GCP_PROJECT_ID', 'example-project')
 CBT_INSTANCE_ID = getenv('CBT_INSTANCE_ID', 'some-instance-id')

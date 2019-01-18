@@ -29,9 +29,10 @@ from airflow.contrib.operators.gcp_bigtable_operator import \
     BigtableInstanceDeleteOperator, \
     BigtableTableDeleteOperator, \
     BigtableTableCreateOperator, \
-    BigtableTableWaitForReplicationSensor, \
     BigtableClusterUpdateOperator, \
     BigtableInstanceCreateOperator
+from airflow.contrib.sensors.gcp_bigtable_sensor import \
+    BigtableTableWaitForReplicationSensor
 
 try:
     # noinspection PyProtectedMember

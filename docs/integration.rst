@@ -910,7 +910,7 @@ BigtableTableDeleteOperator
 BigtableTableWaitForReplicationSensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: airflow.contrib.operators.gcp_bigtable_operator.BigtableTableWaitForReplicationSensor
+.. autoclass:: airflow.contrib.sensors.gcp_bigtable_sensor.BigtableTableWaitForReplicationSensor
 
 .. _BigtableHook:
 
