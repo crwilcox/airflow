@@ -129,32 +129,29 @@ described elsewhere in this document.
 
 Airflow provides operators for many common tasks, including:
 
-- :class:`airflow.operators.bash_operator.BashOperator` - executes a bash command
-- :class:`airflow.operators.python_operator.PythonOperator` - calls an arbitrary Python function
-- :class:`airflow.operators.email_operator.EmailOperator` - sends an email
-- :class:`airflow.operators.http_operator.SimpleHttpOperator` - sends an HTTP request
-- :class:`airflow.operators.mysql_operator.MySqlOperator`,
-  :class:`airflow.operators.sqlite_operator.SqliteOperator`,
-  :class:`airflow.operators.postgres_operator.PostgresOperator`,
-  :class:`airflow.operators.mssql_operator.MsSqlOperator`,
-  :class:`airflow.operators.oracle_operator.OracleOperator`,
-  :class:`airflow.operators.jdbc_operator.JdbcOperator`, etc. - executes a SQL command
+- :class:`~airflow.operators.bash_operator.BashOperator` - executes a bash command
+- :class:`~airflow.operators.python_operator.PythonOperator` - calls an arbitrary Python function
+- :class:`~airflow.operators.email_operator.EmailOperator` - sends an email
+- :class:`~airflow.operators.http_operator.SimpleHttpOperator` - sends an HTTP request
+- :class:`~airflow.operators.mysql_operator.MySqlOperator`,
+  :class:`~airflow.operators.sqlite_operator.SqliteOperator`,
+  :class:`~airflow.operators.postgres_operator.PostgresOperator`,
+  :class:`~airflow.operators.mssql_operator.MsSqlOperator`,
+  :class:`~airflow.operators.oracle_operator.OracleOperator`,
+  :class:`~airflow.operators.jdbc_operator.JdbcOperator`, etc. - executes a SQL command
 - ``Sensor`` - waits for a certain time, file, database row, S3 key, etc...
 
 In addition to these basic building blocks, there are many more specific
-operators: :class:`airflow.operators.docker_operator.DockerOperator`,
-:class:`airflow.operators.hive_operator.HiveOperator`, :class:`airflow.operators.s3_file_transform_operator.S3FileTransformOperator(`,
-:class:`airflow.operators.presto_to_mysql.PrestoToMySqlTransfer`,
-:class:`airflow.operators.slack_operator.SlackAPIOperator`... you get the idea!
-
-The ``airflow/contrib/`` directory contains yet more operators built by the
-community. These operators aren't always as complete or well-tested as those in
-the main distribution, but allow users to more easily add new functionality to
-the platform.
+operators: :class:`~airflow.operators.docker_operator.DockerOperator`,
+:class:`~airflow.operators.hive_operator.HiveOperator`, :class:`~airflow.operators.s3_file_transform_operator.S3FileTransformOperator(`,
+:class:`~airflow.operators.presto_to_mysql.PrestoToMySqlTransfer`,
+:class:`~airflow.operators.slack_operator.SlackAPIOperator`... you get the idea!
 
 Operators are only loaded by Airflow if they are assigned to a DAG.
 
-See :doc:`howto/operator` for how to use Airflow operators.
+See :doc:`howto/operator` for how to use Airflow operators and the
+:doc:`../autoapi/index` for more information.
+
 
 DAG Assignment
 --------------
@@ -921,7 +918,7 @@ Jinja Templating
 
 Airflow leverages the power of
 `Jinja Templating <http://jinja.pocoo.org/docs/dev/>`_ and this can be a
-powerful tool to use in combination with macros (see the :ref:`macros` section).
+powerful tool to use in combination with macros (see the :doc:`macros` section).
 
 For example, say you want to pass the execution date as an environment variable
 to a Bash script using the ``BashOperator``.

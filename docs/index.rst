@@ -92,4 +92,4 @@ Content
     lineage
     changelog
     faq
-    code
+    macros

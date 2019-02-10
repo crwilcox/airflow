@@ -113,6 +113,7 @@ extensions = [
     'sphinxarg.ext',
     'sphinxcontrib.httpdomain',
     'sphinx.ext.intersphinx',
+    'autoapi.extension',
 ]
 
 autodoc_default_flags = ['show-inheritance', 'members']
@@ -158,7 +159,10 @@ release = airflow.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = [
+    '_build',
+    '_autoapi_templates',
+]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -361,3 +365,27 @@ texinfo_documents = [(
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
+
+# sphinx-autoapi configuration
+# See:
+# https://sphinx-autoapi.readthedocs.io/en/latest/config.html
+
+# Paths (relative or absolute) to the source code that you wish to generate
+# your API documentation from.
+autoapi_dirs = [
+    os.path.abspath('../airflow/operators'),
+    os.path.abspath('../airflow/hooks'),
+    os.path.abspath('../airflow/sensors'),
+    os.path.abspath('../airflow/executors'),
+    os.path.abspath('../airflow/contrib/operators'),
+    os.path.abspath('../airflow/contrib/hooks'),
+    os.path.abspath('../airflow/contrib/sensors'),
+    os.path.abspath('../airflow/contrib/executors'),
+]
+
+# A directory that has user-defined templates to override our default templates.
+autoapi_template_dir = '_autoapi_templates'
+
+# Keep the AutoAPI generated files on the filesystem after the run.
+# Useful for debugging.
+autoapi_keep_files = False
