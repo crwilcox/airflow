@@ -149,8 +149,7 @@ operators: :class:`~airflow.operators.docker_operator.DockerOperator`,
 
 Operators are only loaded by Airflow if they are assigned to a DAG.
 
-See :doc:`howto/operator` for how to use Airflow operators and the
-:doc:`../autoapi/index` for more information.
+See :doc:`howto/operator` for how to use Airflow operators.
 
 
 DAG Assignment

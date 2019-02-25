@@ -93,3 +93,4 @@ Content
     changelog
     faq
     macros
+    autoapi/index

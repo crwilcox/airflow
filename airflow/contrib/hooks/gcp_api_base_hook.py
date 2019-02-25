@@ -159,35 +159,6 @@ class GoogleCloudBaseHook(BaseHook):
     def project_id(self):
         return self._get_field('project')
 
-    def fallback_to_default_project_id(func):
-        """
-        Decorator that provides fallback for Google Cloud Platform project id. If
-        the project is None it will be replaced with the project_id from the
-        service account the Hook is authenticated with. Project id can be specified
-        either via project_id kwarg or via first parameter in positional args.
-
-        :param func: function to wrap
-        :return: result of the function call
-        """
-        @functools.wraps(func)
-        def inner_wrapper(self, *args, **kwargs):
-            if len(args) > 0:
-                raise AirflowException(
-                    "You must use keyword arguments in this methods rather than"
-                    " positional")
-            if 'project_id' in kwargs:
-                kwargs['project_id'] = self._get_project_id(kwargs['project_id'])
-            else:
-                kwargs['project_id'] = self._get_project_id(None)
-            if not kwargs['project_id']:
-                raise AirflowException("The project id must be passed either as "
-                                       "keyword project_id parameter or as project_id extra "
-                                       "in GCP connection definition. Both are not set!")
-            return func(self, *args, **kwargs)
-        return inner_wrapper
-
-    fallback_to_default_project_id = staticmethod(fallback_to_default_project_id)
-
     def _get_project_id(self, project_id):
         """
         In case project_id is None, overrides it with default project_id from
@@ -201,6 +172,34 @@ class GoogleCloudBaseHook(BaseHook):
 
     class _Decorators(object):
         """A private inner class for keeping all decorator methods."""
+
+        @staticmethod
+        def fallback_to_default_project_id(func):
+            """
+            Decorator that provides fallback for Google Cloud Platform project id. If
+            the project is None it will be replaced with the project_id from the
+            service account the Hook is authenticated with. Project id can be specified
+            either via project_id kwarg or via first parameter in positional args.
+
+            :param func: function to wrap
+            :return: result of the function call
+            """
+            @functools.wraps(func)
+            def inner_wrapper(self, *args, **kwargs):
+                if len(args) > 0:
+                    raise AirflowException(
+                        "You must use keyword arguments in this methods rather than"
+                        " positional")
+                if 'project_id' in kwargs:
+                    kwargs['project_id'] = self._get_project_id(kwargs['project_id'])
+                else:
+                    kwargs['project_id'] = self._get_project_id(None)
+                if not kwargs['project_id']:
+                    raise AirflowException("The project id must be passed either as "
+                                           "keyword project_id parameter or as project_id extra "
+                                           "in GCP connection definition. Both are not set!")
+                return func(self, *args, **kwargs)
+            return inner_wrapper
 
         @staticmethod
         def provide_gcp_credential_file(func):

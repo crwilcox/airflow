@@ -21,8 +21,7 @@ Using Operators
 An operator represents a single, ideally idempotent, task. Operators
 determine what actually executes when your DAG runs.
 
-See the :ref:`Operators Concepts <concepts-operators>` documentation and the
-:doc:`../autoapi/index` for more information.
+See the :ref:`Operators Concepts <concepts-operators>` documentation.
 
 .. contents:: :local:
 

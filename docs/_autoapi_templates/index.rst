@@ -117,7 +117,7 @@ persisted in the database.
   :glob:
   :maxdepth: 1
 
-  ../api_model
+  airflow/models/index
 
 
 Core and community package

@@ -88,7 +88,7 @@ class GcfHook(GoogleCloudBaseHook):
         return self.get_conn().projects().locations().functions().get(
             name=name).execute(num_retries=NUM_RETRIES)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def create_new_function(self, location, body, project_id=None):
         """
         Creates a new function in Cloud Function in the location specified in the body.
@@ -129,7 +129,7 @@ class GcfHook(GoogleCloudBaseHook):
         operation_name = response["name"]
         self._wait_for_operation_to_complete(operation_name=operation_name)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def upload_function_zip(self, location, zip_path, project_id=None):
         """
         Uploads zip file with sources.

@@ -135,12 +135,12 @@ class UtcDateTime(TypeDecorator):
     Almost equivalent to :class:`~sqlalchemy.types.DateTime` with
     ``timezone=True`` option, but it differs from that by:
     - Never silently take naive :class:`~datetime.datetime`, instead it
-      always raise :exc:`ValueError` unless time zone aware value.
+    always raise :exc:`ValueError` unless time zone aware value.
     - :class:`~datetime.datetime` value's :attr:`~datetime.datetime.tzinfo`
-      is always converted to UTC.
+    is always converted to UTC.
     - Unlike SQLAlchemy's built-in :class:`~sqlalchemy.types.DateTime`,
-      it never return naive :class:`~datetime.datetime`, but time zone
-      aware value, even with SQLite or MySQL.
+    it never return naive :class:`~datetime.datetime`, but time zone
+    aware value, even with SQLite or MySQL.
     - Always returns DateTime in UTC
     """
 

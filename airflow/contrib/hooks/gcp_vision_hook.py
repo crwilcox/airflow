@@ -30,13 +30,18 @@ class NameDeterminer:
     """
     Class used for checking if the entity has the 'name' attribute set.
 
-    - If so, no action is taken.
-    - If not, and the name can be constructed from other parameters provided, it is created and filled in
+    * If so, no action is taken.
+
+    * If not, and the name can be constructed from other parameters provided, it is created and filled in
       the entity.
-    - If both the entity's 'name' attribute is set and the name can be constructed from other parameters
+
+    * If both the entity's 'name' attribute is set and the name can be constructed from other parameters
       provided:
-        - If they are the same: no action is taken.
-        - If they are different: an exception is thrown.
+
+        * If they are the same - no action is taken
+
+        * if they are different - an exception is thrown.
+
     """
 
     def __init__(self, label, id_label, get_path):
@@ -109,7 +114,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
             self._client = ProductSearchClient(credentials=self._get_credentials())
         return self._client
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def create_product_set(
         self,
         location,
@@ -122,7 +127,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
     ):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetCreateOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetCreateOperator`
         """
         client = self.get_conn()
         parent = ProductSearchClient.location_path(project_id, location)
@@ -146,13 +151,13 @@ class CloudVisionHook(GoogleCloudBaseHook):
 
         return product_set_id
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def get_product_set(
         self, location, product_set_id, project_id=None, retry=None, timeout=None, metadata=None
     ):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator`
         """
         client = self.get_conn()
         name = ProductSearchClient.product_set_path(project_id, location, product_set_id)
@@ -168,7 +173,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('ProductSet retrieved:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def update_product_set(
         self,
         product_set,
@@ -182,7 +187,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
     ):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator`
         """
         client = self.get_conn()
         product_set = self.product_set_name_determiner.get_entity_with_name(
@@ -201,13 +206,13 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('ProductSet updated:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def delete_product_set(
         self, location, product_set_id, project_id=None, retry=None, timeout=None, metadata=None
     ):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetDeleteOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetDeleteOperator`
         """
         client = self.get_conn()
         name = ProductSearchClient.product_set_path(project_id, location, product_set_id)
@@ -222,13 +227,13 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.info('ProductSet with the name [%s] deleted.', name)
         return response
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def create_product(
         self, location, product, project_id=None, product_id=None, retry=None, timeout=None, metadata=None
     ):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductCreateOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductCreateOperator`
         """
         client = self.get_conn()
         parent = ProductSearchClient.location_path(project_id, location)
@@ -252,11 +257,11 @@ class CloudVisionHook(GoogleCloudBaseHook):
 
         return product_id
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def get_product(self, location, product_id, project_id=None, retry=None, timeout=None, metadata=None):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductGetOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductGetOperator`
         """
         client = self.get_conn()
         name = ProductSearchClient.product_path(project_id, location, product_id)
@@ -272,7 +277,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('Product retrieved:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def update_product(
         self,
         product,
@@ -286,7 +291,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
     ):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator`
         """
         client = self.get_conn()
         product = self.product_name_determiner.get_entity_with_name(product, product_id, location, project_id)
@@ -303,11 +308,11 @@ class CloudVisionHook(GoogleCloudBaseHook):
         self.log.debug('Product updated:\n%s', response)
         return MessageToDict(response)
 
-    @GoogleCloudBaseHook.fallback_to_default_project_id
+    @GoogleCloudBaseHook._Decorators.fallback_to_default_project_id
     def delete_product(self, location, product_id, project_id=None, retry=None, timeout=None, metadata=None):
         """
         For the documentation see:
-        :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductDeleteOperator`
+          :py:class:`~airflow.contrib.operators.gcp_vision_operator.CloudVisionProductDeleteOperator`
         """
         client = self.get_conn()
         name = ProductSearchClient.product_path(project_id, location, product_id)

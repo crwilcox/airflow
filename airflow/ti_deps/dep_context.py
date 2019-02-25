@@ -39,7 +39,7 @@ class DepContext(object):
     dependencies for:
     - Making sure there are slots available on the infrastructure to run the task instance
     - A task-instance's task-specific dependencies are met (e.g. the previous task
-      instance completed successfully)
+    instance completed successfully)
     - ...
 
     :param deps: The context-specific dependencies that need to be evaluated for a
