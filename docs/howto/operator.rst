@@ -2436,3 +2436,166 @@ Templating
     :dedent: 4
     :start-after: [START gcp_speech_to_text_synthesize_template_fields]
     :end-before: [END gcp_speech_to_text_synthesize_template_fields]
+
+
+Google Cloud Video Intelligence Operators
+-----------------------------------------
+
+.. _howto/operator:CloudVideoIntelligenceDetectVideoLabelsOperator:
+
+CloudVideoIntelligenceDetectVideoLabelsOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Performs video annotation, annotating video labels.
+
+For parameter definition, take a look at
+:class:`airflow.contrib.operators.gcp_video_intelligence_operator.CloudVideoIntelligenceDetectVideoLabelsOperator`
+
+Arguments
+"""""""""
+
+Some arguments in the example DAG are taken from the OS environment variables:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :start-after: [START howto_operator_vision_args_common]
+      :end-before: [END howto_operator_vision_args_common]
+
+Input uri is an uri to a file in google cloud storage
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :start-after: [START howto_operator_video_intelligence_other_args]
+      :end-before: [END howto_operator_video_intelligence_other_args]
+
+Using the operator
+""""""""""""""""""
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_video_intelligence_detect_labels]
+      :end-before: [END howto_operator_video_intelligence_detect_labels]
+
+You can use the annotation output via Xcom:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_video_intelligence_detect_labels_result]
+      :end-before: [END howto_operator_video_intelligence_detect_labels_result]
+
+Templating
+""""""""""
+
+.. literalinclude:: ../../airflow/contrib/operators/gcp_video_intelligence_operator.py
+    :language: python
+    :dedent: 4
+    :start-after: [START gcp_video_intelligence_detect_labels_template_fields]
+    :end-before: [END gcp_video_intelligence_detect_labels_template_fields]
+
+.. _howto/operator:CloudVideoIntelligenceDetectVideoExplicitContentOperator:
+
+CloudVideoIntelligenceDetectVideoExplicitContentOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Performs video annotation, annotating explicit content.
+
+For parameter definition, take a look at
+:class:`airflow.contrib.operators.gcp_video_intelligence_operator.CloudVideoIntelligenceDetectVideoExplicitContentOperator`
+
+Arguments
+"""""""""
+
+Some arguments in the example DAG are taken from the OS environment variables:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :start-after: [START howto_operator_vision_args_common]
+      :end-before: [END howto_operator_vision_args_common]
+
+Input uri is an uri to a file in google cloud storage
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :start-after: [START howto_operator_video_intelligence_other_args]
+      :end-before: [END howto_operator_video_intelligence_other_args]
+
+Using the operator
+""""""""""""""""""
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_video_intelligence_detect_explicit_content]
+      :end-before: [END howto_operator_video_intelligence_detect_explicit_content]
+
+You can use the annotation output via Xcom:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_video_intelligence_detect_explicit_content_result]
+      :end-before: [END howto_operator_video_intelligence_detect_explicit_content_result]
+
+Templating
+""""""""""
+
+.. literalinclude:: ../../airflow/contrib/operators/gcp_video_intelligence_operator.py
+    :language: python
+    :dedent: 4
+    :start-after: [START gcp_video_intelligence_detect_explicit_content_template_fields]
+    :end-before: [END gcp_video_intelligence_detect_explicit_content_template_fields]
+
+.. _howto/operator:CloudVideoIntelligenceDetectVideoShotsOperator:
+
+CloudVideoIntelligenceDetectVideoShotsOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Performs video annotation, annotating explicit content.
+
+For parameter definition, take a look at
+:class:`airflow.contrib.operators.gcp_video_intelligence_operator.CloudVideoIntelligenceDetectVideoShotsOperator`
+
+Arguments
+"""""""""
+
+Some arguments in the example DAG are taken from the OS environment variables:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :start-after: [START howto_operator_vision_args_common]
+      :end-before: [END howto_operator_vision_args_common]
+
+Input uri is an uri to a file in google cloud storage
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :start-after: [START howto_operator_video_intelligence_other_args]
+      :end-before: [END howto_operator_video_intelligence_other_args]
+
+Using the operator
+""""""""""""""""""
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_video_intelligence_detect_video_shots]
+      :end-before: [END howto_operator_video_intelligence_detect_video_shots]
+
+You can use the annotation output via Xcom:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_video_intelligence.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_video_intelligence_detect_video_shots_result]
+      :end-before: [END howto_operator_video_intelligence_detect_video_shots_result]
+
+Templating
+""""""""""
+
+.. literalinclude:: ../../airflow/contrib/operators/gcp_video_intelligence_operator.py
+    :language: python
+    :dedent: 4
+    :start-after: [START gcp_video_intelligence_detect_video_shots_template_fields]
+    :end-before: [END gcp_video_intelligence_detect_video_shots_template_fields]

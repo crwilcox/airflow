@@ -216,6 +216,9 @@ Operators
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator
+.. autoclass:: airflow.contrib.operators.gcp_video_intelligence_operator.CloudVideoIntelligenceDetectVideoLabelsOperator
+.. autoclass:: airflow.contrib.operators.gcp_video_intelligence_operator.CloudVideoIntelligenceDetectVideoExplicitContentOperator
+.. autoclass:: airflow.contrib.operators.gcp_video_intelligence_operator.CloudVideoIntelligenceDetectVideoShotsOperator
 .. autoclass:: airflow.contrib.operators.gcs_acl_operator.GoogleCloudStorageBucketCreateAclEntryOperator
 .. autoclass:: airflow.contrib.operators.gcs_operator.GoogleCloudStorageCreateBucketOperator
 .. autoclass:: airflow.contrib.operators.gcs_download_operator.GoogleCloudStorageDownloadOperator
@@ -509,6 +512,7 @@ Community contributed hooks
 .. autoclass:: airflow.contrib.hooks.gcp_function_hook.GcfHook
 .. autoclass:: airflow.contrib.hooks.gcp_api_base_hook.GoogleCloudBaseHook
 .. autoclass:: airflow.contrib.hooks.gcp_kms_hook.GoogleCloudKMSHook
+.. autoclass:: airflow.contrib.hooks.gcp_video_intelligence_hook.CloudVideoIntelligenceHook
 .. autoclass:: airflow.contrib.hooks.gcs_hook.GoogleCloudStorageHook
 .. autoclass:: airflow.contrib.hooks.imap_hook.ImapHook
 .. autoclass:: airflow.contrib.hooks.jenkins_hook.JenkinsHook
