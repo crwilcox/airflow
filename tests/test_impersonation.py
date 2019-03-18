@@ -33,18 +33,33 @@ TEST_DAG_FOLDER = os.path.join(
 DEFAULT_DATE = datetime(2015, 1, 1)
 TEST_USER = 'airflow_test_user'
 
-logger = logging.getLogger(__name__)
 
-# TODO(aoen): Adding/remove a user as part of a test is very bad (especially if the user
-# already existed to begin with on the OS), this logic should be moved into a test
-# that is wrapped in a container like docker so that the user can be safely added/removed.
-# When this is done we can also modify the sudoers file to ensure that useradd will work
-# without any manual modification of the sudoers file by the agent that is running these
-# tests.
+logger = logging.getLogger(__name__)
 
 
 class ImpersonationTest(unittest.TestCase):
+
+    @staticmethod
+    def update_database_permissions(revoke=False):
+        # In case tests are run with SQLITE db, Permissions need to be changed for
+        # Sqlite database and it's folder
+        airflow_connection = os.environ.get('AIRFLOW__CORE__SQL_ALCHEMY_CONN')
+        sqlite_prefix = 'sqlite:///'
+        if airflow_connection.startswith(sqlite_prefix):
+            sqlite_db_path = airflow_connection[len(sqlite_prefix):]
+            sqlite_db_dir_path = os.path.dirname(sqlite_db_path)
+            folder_permissions = "og-rwx" if revoke else "og+rwx"
+            file_permission = "og-rw" if revoke else "og+rw"
+            subprocess.check_output(['sudo', 'chmod', file_permission, sqlite_db_path])
+            subprocess.check_output(['sudo', 'chmod', folder_permissions, sqlite_db_dir_path])
+
     def setUp(self):
+        if not os.path.isfile('/.dockerenv') or os.environ.get('APT_DEPS_IMAGE') is None:
+            raise unittest.SkipTest("""Adding/removing a user as part of a test is very bad for host os
+(especially if the user already existed to begin with on the OS), therefore we check if we run inside a
+the official docker container and only allow to run the test there. This is done by checking /.dockerenv
+file (always present inside container) and checking for APT_DEPS_IMAGE variable.
+""")
         self.dagbag = models.DagBag(
             dag_folder=TEST_DAG_FOLDER,
             include_examples=False,
@@ -68,9 +83,11 @@ class ImpersonationTest(unittest.TestCase):
                     "current user have permission to run 'useradd' without a password "
                     "prompt (check sudoers file)?"
                 )
+        self.update_database_permissions(revoke=False)
 
     def tearDown(self):
         subprocess.check_output(['sudo', 'userdel', '-r', TEST_USER])
+        self.update_database_permissions(revoke=True)
 
     def run_backfill(self, dag_id, task_id):
         dag = self.dagbag.get_dag(dag_id)

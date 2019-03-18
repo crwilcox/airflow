@@ -72,6 +72,7 @@ DEFAULT_LOGGING_CONFIG = {
         'console': {
             'class': 'airflow.utils.log.logging_mixin.RedirectStdHandler',
             'formatter': 'airflow',
+            'level': LOG_LEVEL,
             'stream': 'sys.stdout'
         },
         'task': {
@@ -91,7 +92,7 @@ DEFAULT_LOGGING_CONFIG = {
         'airflow.processor': {
             'handlers': ['processor'],
             'level': LOG_LEVEL,
-            'propagate': False,
+            'propagate': True,
         },
         'airflow.task': {
             'handlers': ['task'],

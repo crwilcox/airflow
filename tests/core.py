@@ -20,7 +20,6 @@
 import json
 import unittest
 
-import doctest
 import mock
 import multiprocessing
 import os
@@ -44,7 +43,7 @@ from airflow import configuration
 from airflow.executors import SequentialExecutor
 from airflow.models import Variable, TaskInstance
 
-from airflow import jobs, models, DAG, utils, macros, settings, exceptions
+from airflow import jobs, models, DAG, utils, settings, exceptions
 from airflow.models import BaseOperator, Connection, TaskFail
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.check_operator import CheckOperator, ValueCheckOperator
@@ -680,13 +679,6 @@ class CoreTest(unittest.TestCase):
             task=self.runme_0, execution_date=DEFAULT_DATE)
         ti.dag = self.dag_bash
         ti.run(ignore_ti_state=True)
-
-    def test_doctests(self):
-        modules = [utils, macros]
-        for mod in modules:
-            failed, tests = doctest.testmod(mod)
-            if failed:
-                raise Exception("Failed a doctest")
 
     def test_variable_set_get_round_trip(self):
         Variable.set("tested_var_set_id", "Monday morning breakfast")

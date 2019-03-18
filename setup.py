@@ -16,9 +16,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import unittest
 
 from setuptools import setup, find_packages, Command
-from setuptools.command.test import test as TestCommand
 
 import imp
 import io
@@ -47,26 +47,10 @@ except FileNotFoundError:
     long_description = ''
 
 
-class Tox(TestCommand):
-    user_options = [('tox-args=', None, "Arguments to pass to tox")]
-
-    def __init__(self, dist, **kw):
-        super().__init__(dist, **kw)
-        self.test_suite = True
-        self.test_args = []
-        self.tox_args = ''
-
-    def initialize_options(self):
-        TestCommand.initialize_options(self)
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-
-    def run_tests(self):
-        # import here, cause outside the eggs aren't loaded
-        import tox
-        errno = tox.cmdline(args=self.tox_args.split())
-        sys.exit(errno)
+def airflow_test_suite():
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover('tests', pattern='test_*.py')
+    return test_suite
 
 
 class CleanCommand(Command):
@@ -257,8 +241,10 @@ all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant + druid + 
 devel = [
     'beautifulsoup4~=4.7.1',
     'click==6.7',
+    'codecov',
     'flake8>=3.6.0',
     'freezegun',
+    'ipdb',
     'jira',
     'mock;python_version<"3.3"',
     'mongomock',
@@ -268,11 +254,13 @@ devel = [
     'nose-timer',
     'parameterized',
     'paramiko',
+    'pydevd',
     'pysftp',
     'pywinrm',
     'qds-sdk>=1.9.6',
     'rednose',
-    'requests_mock'
+    'requests_mock',
+    'virtualenv',
 ]
 
 if PY3:
@@ -427,10 +415,10 @@ def do_setup():
         download_url=(
             'https://dist.apache.org/repos/dist/release/airflow/' + version),
         cmdclass={
-            'test': Tox,
             'extra_clean': CleanCommand,
             'compile_assets': CompileAssets
         },
+        test_suite='setup.airflow_test_suite',
         python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',
     )
 

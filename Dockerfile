@@ -199,6 +199,7 @@ FROM ${APT_DEPS_IMAGE} as main
 
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
+WORKDIR /opt/airflow
 
 RUN echo "Airflow version: ${AIRFLOW_VERSION}"
 
@@ -316,5 +317,7 @@ USER ${AIRFLOW_USER}
 WORKDIR ${AIRFLOW_HOME}
 
 EXPOSE 8080
+
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--", "/entrypoint.sh"]
+
 CMD ["--help"]
