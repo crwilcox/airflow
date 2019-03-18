@@ -33,7 +33,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
-
   mongo:
     image: mongo:3
     restart: always
