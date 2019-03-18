@@ -21,27 +21,30 @@ MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Bash sanity settings (error on exit, complain for undefined vars, error when pipe fails)
 set -euo pipefail
 
+if [[ ${AIRFLOW_CI_VERBOSE:="false"} == "true" ]]; then
+    set -x
+fi
+
+if [[ -z "${AIRFLOW__CORE__SQL_ALCHEMY_CONN:=}" ]]; then
+    echo "AIRFLOW__CORE__SQL_ALCHEMY_CONN not set - abort" >&2
+    exit 2
+fi
+
 CMDNAME="$(basename -- "$0")"
 
 # Update short and long options in the breeze-complete script
 # This way autocomplete will work automagically with all options
 . ${MY_DIR}/run-tests-complete
 
-AIRFLOW_ROOT="$(cd ${MY_DIR}; pwd)"
-export AIRFLOW__CORE__DAGS_FOLDER="S{AIRFLOW_ROOT}/tests/dags"
+export AIRFLOW_ROOT=${AIRFLOW_HOME:=${HOME}}
+echo Airflow root: ${AIRFLOW_ROOT}
 
-# add test/contrib to PYTHONPATH
+export AIRFLOW__CORE__DAGS_FOLDER="${AIRFLOW_ROOT}/tests/dags"
+
+# add test/test_utils to PYTHONPATH (TODO: Do we need it?)
 export PYTHONPATH=${PYTHONPATH:-${AIRFLOW_ROOT}/tests/test_utils}
 
-# environment
-export AIRFLOW_HOME=${AIRFLOW_HOME:=${HOME}}
-
-echo Airflow home: ${AIRFLOW_HOME}
-
 export AIRFLOW__CORE__UNIT_TEST_MODE=True
-
-# add test/test_utils to PYTHONPATH TODO: Do we need that ??? Looks fishy.
-export PYTHONPATH=${PYTHONPATH}:${MY_DIR}/tests/test_utils
 
 usage() {
       echo """
@@ -55,8 +58,22 @@ Flags:
 -h, --help
         Shows this help message.
 
--s, --skip-db-init
-        Skips database initialization
+-i, --with-db-init
+        Performs database initialization before tests
+
+-x, --with-xunit
+        Dumps result of the tests to Xunit file
+
+-s, --nocapture
+        Don't capture stdout when running the tests. This is useful if you are
+        debugging with ipdb and want to drop into console with it
+        by adding this line to source code:
+
+            import ipdb; ipdb.set_trace()
+
+-f, --xunit-file
+        The file where xunit results should be dumped. Default if not specified
+        is ${AIRFLOW_ROOT}/logs/all_tests.xml
 
 """
 }
@@ -78,7 +95,10 @@ fi
 eval set -- "${PARAMS}"
 unset PARAMS
 
-SKIP_DB_INIT="false"
+WITH_DB_INIT="false"
+NOCAPTURE="false"
+WITH_XUNIT="false"
+XUNIT_FILE="${AIRFLOW_ROOT}/logs/all_tests.xml"
 
 # Parse Flags.
 # Please update short and long options in the run-tests-complete script
@@ -89,9 +109,18 @@ do
     -h|--help)
       usage;
       exit 0 ;;
-    -s|--skip-db-init)
-      SKIP_DB_INIT="true"
+    -i|--with-db-init)
+      WITH_DB_INIT="true"
       shift ;;
+    -s|--nocapture)
+      NOCAPTURE="true"
+      shift ;;
+    -x|--with-xunit)
+      WITH_XUNIT="true"
+      shift ;;
+    -f|--xunit-file)
+      XUNIT_FILE="$2"
+      shift; shift ;;
     --)
       shift ;
       break ;;
@@ -109,14 +138,26 @@ done
 # any argument received after -- is overriding the default nose execution arguments:
 NOSE_ARGS=$@
 
-if [[ "${SKIP_DB_INIT}" == "true" ]]; then
+AIRFLOW_DB_INITIALISED_FILE=${HOME}/.airflow_db_initialised
+
+if [[ "${WITH_DB_INIT}" == "true" || ! -f ${AIRFLOW_DB_INITIALISED_FILE} ]]; then
     echo
-    echo "Skipping initializing of the DB"
+    if [[ "${WITH_DB_INIT}" == "true" ]]; then
+        echo "Initializing the DB - forced with --with-db-init switch"
+    else
+        echo "Initializing the DB - first time after entering the container"
+        echo "You can force re-initialization the database by adding --with-db-init switch to run-tests."
+    fi
     echo
-else
-    echo "Initializing the DB"
     yes | airflow initdb || true
     airflow resetdb -y
+    touch ${AIRFLOW_DB_INITIALISED_FILE}
+else
+    echo
+    echo "Skipping initializing of the DB as it was initialized already"
+    echo
+    echo "You can re-initialize the database by adding --with-db-init flag when running tests"
+    echo
 fi
 
 kinit -kt ${KRB5_KTNAME} airflow
@@ -134,14 +175,20 @@ if [[ -z "${NOSE_ARGS}" ]]; then
   --logging-level=DEBUG"
 fi
 
-# For impersonation tests running on SQLite on Travis, make the database world readable so other
-# users can update it
-AIRFLOW_DB="${HOME}/airflow.db"
+if [[ "${WITH_XUNIT}" == "true" ]]; then
+    echo
+    echo "Dumping results to ${XUNIT_FILE}"
+    echo
+    NOSE_ARGS="${NOSE_ARGS} --with-xunit --xunit-file=${XUNIT_FILE}"
+fi
 
-if [[ -f "${AIRFLOW_DB}" ]]; then
-  chmod a+rw "${AIRFLOW_DB}"
-  chmod g+rwx "${AIRFLOW_HOME}"
+if [[ "${NOCAPTURE}" == "true" ]]; then
+    echo
+    echo "Stop capturing stdout"
+    echo
+    NOSE_ARGS="${NOSE_ARGS} --nocapture"
 fi
 
 echo "Starting the tests with the following nose arguments: ${NOSE_ARGS}"
+set -x
 nosetests ${NOSE_ARGS}

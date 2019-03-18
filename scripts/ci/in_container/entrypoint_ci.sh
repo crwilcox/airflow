@@ -34,9 +34,6 @@ ENV=${ENV:=docker}
 BACKEND=${BACKEND:=sqlite}
 KUBERNETES_VERSION=${KUBERNETES_VERSION:=}
 
-RUN_TESTS=${RUN_TESTS:="true"}
-
-ARGS=$@
 
 if [[ -z "${AIRFLOW_HOME:=}" ]]; then
     echo
@@ -44,6 +41,33 @@ if [[ -z "${AIRFLOW_HOME:=}" ]]; then
     echo
     exit 1
 fi
+
+CLEAN_FILES=${CLEAN_FILES:=false}
+
+if [[ ! -d "${AIRFLOW_HOME}/airflow/www/node_modules" && "${CLEAN_FILES}" == "false" ]]; then
+    echo
+    echo "Installing NPM modules as they are not yet installed (sources are mounted from the host)"
+    echo
+    pushd "${AIRFLOW_HOME}/airflow/www/"
+    npm ci
+    echo
+    popd
+fi
+if [[ ! -d "${AIRFLOW_HOME}/airflow/www/static/dist" && ${CLEAN_FILES} == "false" ]]; then
+    pushd "${AIRFLOW_HOME}/airflow/www/"
+    echo
+    echo "Building production version of javascript files (sources are mounted from the host)"
+    echo
+    echo
+    npm run prod
+    echo
+    echo
+    popd
+fi
+
+ARGS=$@
+
+RUN_TESTS=${RUN_TESTS:="true"}
 
 if [[ ! -d "${AIRFLOW_HOME}/airflow/www/node_modules" && "${CLEAN_FILES}" == "false" ]]; then
     echo

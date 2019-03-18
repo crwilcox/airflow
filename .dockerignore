@@ -37,6 +37,7 @@
 
 !.coveragerc
 !.rat-excludes
+!.flake8
 !LICENSE
 !MANIFEST.in
 !NOTICE
@@ -44,6 +45,11 @@
 # Avoid triggering context change on README change (new companies using Airflow)
 # So please do not uncomment this line ;)
 # !README.md
+
+# Run tests command with bash completion
+!.bash_completion
+!run-tests
+!run-tests-complete
 
 # Setup/version configuration
 !setup.cfg

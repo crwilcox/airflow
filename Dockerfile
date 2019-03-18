@@ -300,6 +300,12 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Generate list of all tests to aid auto-complete of run-test command
+RUN gosu ${AIRFLOW_USER} nosetests --collect-only --with-xunit \
+    --xunit-file=${AIRFLOW_USER_HOME}/all_tests.xml && \
+    gosu ${AIRFLOW_USER} python ${AIRFLOW_HOME}/tests/utils/get_all_tests.py \
+        ${AIRFLOW_USER_HOME}/all_tests.xml >${AIRFLOW_USER_HOME}/all_tests.txt
+
 # Additional python deps to install
 ARG ADDITIONAL_PYTHON_DEPS=""
 
@@ -308,13 +314,19 @@ RUN if [[ -n "${ADDITIONAL_PYTHON_DEPS}" ]]; then \
     fi
 
 COPY ./scripts/docker/entrypoint.sh /entrypoint.sh
-RUN if [[ "${AIRFLOW_USER}" != "root" ]]; then \
-        chown ${AIRFLOW_USER}.${AIRFLOW_USER} /entrypoint.sh && chmod +x /entrypoint.sh; \
-    fi
+
+RUN chown ${AIRFLOW_USER}.${AIRFLOW_USER} /entrypoint.sh && chmod +x /entrypoint.sh
+
+COPY .bash_completion run-tests-complete run-tests ${AIRFLOW_USER_HOME}/
+
+RUN echo ". ${AIRFLOW_USER_HOME}/.bash_completion" >> ${AIRFLOW_USER_HOME}/.bashrc
+
+RUN chmod +x ${AIRFLOW_USER_HOME}/run-tests-complete ${AIRFLOW_USER_HOME}/run-tests && \
+    chown ${AIRFLOW_USER}.${AIRFLOW_USER} ${AIRFLOW_USER_HOME}/.bashrc ${AIRFLOW_USER_HOME}/run-tests-complete
 
 USER ${AIRFLOW_USER}
 
-WORKDIR ${AIRFLOW_HOME}
+ENV PATH="${AIRFLOW_USER_HOME}:${PATH}"
 
 EXPOSE 8080
 

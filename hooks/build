@@ -345,8 +345,6 @@ BRANCH_NAME=${BRANCH_NAME:="master"}
 # directory where "deployment" artifacts should be placed
 DEPLOY_DIR=${AIRFLOW_ROOT}/dist/${BRANCH_NAME}/$(date +%Y-%m-%d)/${BUILD_ID}/${PYTHON_VERSION}
 
-mkdir -p "${DEPLOY_DIR}"
-
 FIXED_PERMISSIONS_FILE=${DEPLOY_DIR}/fixed-permissions.txt
 ALL_FILES_FILE=${DEPLOY_DIR}/all-files.txt
 ALL_FILES_IN_CONTEXT_FILE=${DEPLOY_DIR}/all-files-in-context.txt
