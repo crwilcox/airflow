@@ -13,7 +13,14 @@ from google.api_core.exceptions import Forbidden, ResourceExhausted
 from google.api_core import retry
 from google.cloud import translate_v2
 from google.cloud import vision
+from google.cloud import language
 
+
+TEXT = """
+Airflow is a platform to programmatically author, schedule and monitor workflows.
+Airflow is a platform to programmatically author, schedule and monitor workflows.
+Airflow is a platform to programmatically author, schedule and monitor workflows.
+"""
 
 # Setup env
 logging.basicConfig(level=logging.DEBUG)
@@ -29,6 +36,8 @@ authed_http = google_auth_httplib2.AuthorizedHttp(credentials, http=http)
 
 client_annotator = vision.ImageAnnotatorClient(credentials=credentials)
 client_translate = translate_v2.Client(credentials=credentials)
+client_natural_language = language.LanguageServiceClient()
+
 
 def test_annotate_image():
     response = client_annotator.annotate_image(
@@ -41,17 +50,25 @@ def test_annotate_image():
 
 
 def test_translate():
-    TEXT = """
-    Airflow is a platform to programmatically author, schedule and monitor workflows.
-    """
-
     response = client_translate.translate(TEXT, target_language="PL")['translatedText']
     return response
 
 
-TEST_FNS= [
-    test_annotate_image,
-    test_translate
+def text_natural_language():
+
+    document = language.types.Document(
+        content=TEXT,
+        type=language.enums.Document.Type.PLAIN_TEXT
+    )
+
+    annotations = client_natural_language.analyze_sentiment(document=document)
+    return annotations
+
+
+TEST_FNS = [
+    text_natural_language,
+    # test_annotate_image,
+    # test_translate
 ]
 
 # Setup retry mechanism
@@ -62,6 +79,7 @@ INVALID_KEYS = [
 INVALID_REASONS = [
     'userRateLimitExceeded',
 ]
+
 
 class retry_if_temporary_quota(tenacity.retry_if_exception):
     """Retries if there was an exception for exceeding the temporary quota."""
