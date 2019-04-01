@@ -17,19 +17,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
 import os
 import unittest
 
+import six
+import tenacity
+
 from parameterized import parameterized
-from google.api_core.exceptions import RetryError, AlreadyExists
+import google.auth
+from google.auth.exceptions import GoogleAuthError
+from google.api_core.exceptions import RetryError, AlreadyExists, Forbidden
 from google.cloud.exceptions import MovedPermanently
 
 from airflow import AirflowException, LoggingMixin
 from airflow.contrib.hooks import gcp_api_base_hook as hook
 
-import google.auth
-from google.auth.exceptions import GoogleAuthError
+from airflow.contrib.hooks.gcp_api_base_hook import quota_retry
 
 try:
     from StringIO import StringIO
@@ -50,6 +53,57 @@ try:
     _, default_project = google.auth.default(scopes=hook._DEFAULT_SCOPES)
 except GoogleAuthError:
     default_creds_available = False
+
+
+class NoForbiddenAfterCount(object):
+    """Holds counter state for invoking a method several times in a row."""
+
+    def __init__(self, count, **kwargs):
+        self.counter = 0
+        self.count = count
+        self.kwargs = kwargs
+
+    def __call__(self):
+        """Raise an Forbidden until after count threshold has been crossed.
+        Then return True.
+        """
+        if self.counter < self.count:
+            self.counter += 1
+            raise Forbidden(**self.kwargs)
+        return True
+
+
+@quota_retry(wait=tenacity.wait_none())
+def _retryable_test_with_temporare_quota_retry(thing):
+    return thing()
+
+
+class retry_if_temporary_quotaTestCase(unittest.TestCase):
+    def test_do_nothing_on_non_error(self):
+        r = _retryable_test_with_temporare_quota_retry(lambda: 42)
+        self.assertTrue(r, 42)
+
+    def test_retry_on_exception(self):
+        message = "POST https://translation.googleapis.com/language/translate/v2: User Rate Limit Exceeded"
+        errors = [
+            {
+                'message': 'User Rate Limit Exceeded',
+                'domain': 'usageLimits',
+                'reason': 'userRateLimitExceeded',
+            }
+        ]
+        _retryable_test_with_temporare_quota_retry(NoForbiddenAfterCount(5, message=message, errors=errors))
+
+    def test_raise_exception_on_non_quota_exception(self):
+        with six.assertRaisesRegex(self, Forbidden, "Daily Limit Exceeded"):
+            message = "POST https://translation.googleapis.com/language/translate/v2: Daily Limit Exceeded"
+            errors = [
+                {'message': 'Daily Limit Exceeded', 'domain': 'usageLimits', 'reason': 'dailyLimitExceeded'}
+            ]
+
+            _retryable_test_with_temporare_quota_retry(
+                NoForbiddenAfterCount(5, message=message, errors=errors)
+            )
 
 
 class TestCatchHttpException(unittest.TestCase):
@@ -177,5 +231,31 @@ class TestGoogleCloudBaseHook(unittest.TestCase):
             self.assertEqual(os.environ[hook._G_APP_CRED_ENV_VAR],
                              file_name)
             self.assertEqual(file_content, string_file.getvalue())
+
+        assert_gcp_credential_file_in_env(self.instance)
+
+    @mock.patch('tempfile.NamedTemporaryFile')
+    def test_provide_gcp_credential_file_decorator_key_content_explict(self, mock_file):
+        string_file = StringIO()
+        file_content = '{"foo": "bar"}'
+        file_name = '/test/mock-file'
+        mock_file_handler = mock_file.return_value.__enter__.return_value
+        mock_file_handler.name = file_name
+        mock_file_handler.write = string_file.write
+
+        @hook.GoogleCloudBaseHook._Decorators.provide_gcp_credential_file(keyfile_dict=file_content)
+        def assert_gcp_credential_file_in_env(hook_instance):
+            self.assertEqual(os.environ[hook._G_APP_CRED_ENV_VAR],
+                             file_name)
+            self.assertEqual(file_content, string_file.getvalue())
+
+        assert_gcp_credential_file_in_env(self.instance)
+
+    def test_provide_gcp_credential_file_decorator_key_path_explict(self):
+        key_path = '/test/key-path'
+
+        @hook.GoogleCloudBaseHook._Decorators.provide_gcp_credential_file(key_path=key_path)
+        def assert_gcp_credential_file_in_env(hook_instance):
+            self.assertEqual(os.environ[hook._G_APP_CRED_ENV_VAR], key_path)
 
         assert_gcp_credential_file_in_env(self.instance)

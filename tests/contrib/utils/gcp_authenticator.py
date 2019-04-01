@@ -20,7 +20,7 @@ import json
 import os
 import subprocess
 
-from airflow import settings, AirflowException
+from airflow import settings, AirflowException, LoggingMixin
 from tests.contrib.utils.logging_command_executor import LoggingCommandExecutor
 
 from airflow.models.connection import Connection
@@ -128,7 +128,6 @@ class GcpAuthenticator(LoggingCommandExecutor):
             next to airflow directory in config directory
             it tries to find the key folder in the workspace's config
             directory.
-        :param : name of the key file to find.
         """
         if "GCP_CONFIG_DIR" in os.environ:
             gcp_config_dir = os.environ["GCP_CONFIG_DIR"]

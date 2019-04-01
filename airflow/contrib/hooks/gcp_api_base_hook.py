@@ -19,6 +19,7 @@
 #
 import json
 import functools
+import logging
 
 import httplib2
 import google.auth
@@ -27,17 +28,96 @@ import google.oauth2.service_account
 import os
 import tempfile
 
-from google.api_core.exceptions import GoogleAPICallError, AlreadyExists, RetryError
-
+import tenacity
+from google.api_core.exceptions import GoogleAPICallError, AlreadyExists, RetryError, Forbidden, ResourceExhausted
+from airflow import LoggingMixin
 from airflow.exceptions import AirflowException
 from airflow.hooks.base_hook import BaseHook
 
+logger = LoggingMixin().log
 
 _DEFAULT_SCOPES = ('https://www.googleapis.com/auth/cloud-platform',)
 # The name of the environment variable that Google Authentication library uses
 # to get service account key location. Read more:
 # https://cloud.google.com/docs/authentication/getting-started#setting_the_environment_variable
 _G_APP_CRED_ENV_VAR = "GOOGLE_APPLICATION_CREDENTIALS"
+
+
+# Constants used by the mechanism of repeating requests in reaction to exceeding the temporary quota.
+INVALID_KEYS = [
+    'DefaultRequestsPerMinutePerProject',
+    'DefaultRequestsPerMinutePerUser',
+    'RequestsPerMinutePerProject',
+    "Resource has been exhausted (e.g. check quota).",
+]
+INVALID_REASONS = [
+    'userRateLimitExceeded',
+]
+
+
+class retry_if_temporary_quota(tenacity.retry_if_exception):
+    """Retries if there was an exception for exceeding the temporary quote limit."""
+
+    def __init__(self):
+        def is_soft_quota_exception(exception):
+            if isinstance(exception, Forbidden):
+                return any(
+                    reason in error["reason"]
+                    for reason in INVALID_REASONS
+                    for error in exception.errors
+                )
+
+            if isinstance(exception, ResourceExhausted):
+                return any(
+                    key in error.details()
+                    for key in INVALID_KEYS
+                    for error in exception.errors
+                )
+
+            return False
+        super(retry_if_temporary_quota, self).__init__(is_soft_quota_exception)
+
+
+def quota_retry(*args, **kwargs):
+    """
+    A decorator who provides a mechanism to repeat requests in response to exceeding a temporary quote limit.
+    """
+    def decorator(fun):
+        default_kwargs = {
+            'wait':tenacity.wait_exponential(multiplier=1, max=100),
+            'retry': retry_if_temporary_quota(),
+            'before': tenacity.before_log(logger, logging.DEBUG),
+            'after': tenacity.after_log(logger, logging.DEBUG),
+        }
+        default_kwargs.update(**kwargs)
+        return tenacity.retry(
+            *args, **default_kwargs
+        )(fun)
+    return decorator
+
+
+class CloudQuotaSystemTestMixin(object):
+    RETRY_COUNT = 20
+
+    def test_quota_exception_not_raise_exception(self):
+
+        @quota_retry()
+        def decorated_fn():
+            return self.do_request()
+
+        r = decorated_fn()
+        try:
+
+            for i in range(self.RETRY_COUNT - 1):
+                logger.debug("Retry no. %s", i + 1)
+                self.assertEqual(decorated_fn(), r)
+        except Exception as e:
+            import ipdb; ipdb.set_trace()
+            print(e)
+            raise
+
+    def do_request(self):
+        raise NotImplemented("You must ovveride `do_request` method.")
 
 
 class GoogleCloudBaseHook(BaseHook):
@@ -225,26 +305,46 @@ class GoogleCloudBaseHook(BaseHook):
         """A private inner class for keeping all decorator methods."""
 
         @staticmethod
-        def provide_gcp_credential_file(func):
+        def provide_gcp_credential_file(*dargs, key_path=False, keyfile_dict=False):
             """
             Function decorator that provides a GOOGLE_APPLICATION_CREDENTIALS
             environment variable, pointing to file path of a JSON file of service
             account key.
+
+            Two syntaxes are supported:
+
+            * @create_provider_gcp_credentials_decorator - for hook methods
+            * @create_provider_gcp_credentials_decorator(key_path="AAA") - for general purpose
+
             """
-            @functools.wraps(func)
-            def wrapper(self, *args, **kwargs):
-                with tempfile.NamedTemporaryFile(mode='w+t') as conf_file:
+            def create_provide_gcp_credential_file(key_path=False, keyfile_dict=False):
+
+                def decorator(func):
+                    @functools.wraps(func)
+                    def wrap(self, *args, **kwargs):
+                        with tempfile.NamedTemporaryFile(mode='w+t') as conf_file:
+                            if key_path:
+                                if key_path.endswith('.p12'):
+                                    raise AirflowException(
+                                        'Legacy P12 key file are not supported, use a JSON key file.'
+                                    )
+                                os.environ[_G_APP_CRED_ENV_VAR] = key_path
+                            elif keyfile_dict:
+                                conf_file.write(keyfile_dict)
+                                conf_file.flush()
+                                os.environ[_G_APP_CRED_ENV_VAR] = conf_file.name
+                            return func(self, *args, **kwargs)
+                    return wrap
+
+                return decorator
+
+            if len(dargs) == 1 and callable(dargs[0]):
+                @functools.wraps(dargs[0])
+                def wrapper(self, *args, **kwargs):
                     key_path = self._get_field('key_path', False)
                     keyfile_dict = self._get_field('keyfile_dict', False)
-                    if key_path:
-                        if key_path.endswith('.p12'):
-                            raise AirflowException(
-                                'Legacy P12 key file are not supported, '
-                                'use a JSON key file.')
-                        os.environ[_G_APP_CRED_ENV_VAR] = key_path
-                    elif keyfile_dict:
-                        conf_file.write(keyfile_dict)
-                        conf_file.flush()
-                        os.environ[_G_APP_CRED_ENV_VAR] = conf_file.name
-                    return func(self, *args, **kwargs)
-            return wrapper
+                    return create_provide_gcp_credential_file(key_path, keyfile_dict)
+
+                return wrapper
+            else:
+                return create_provide_gcp_credential_file(key_path, keyfile_dict)

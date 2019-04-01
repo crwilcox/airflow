@@ -1,19 +1,14 @@
 import logging
-
-import httplib2
-import google.auth
-import google_auth_httplib2
-import google.oauth2.service_account
-import os
+import unittest
 import tempfile
 
 import tenacity
-
 from google.api_core.exceptions import Forbidden, ResourceExhausted
-from google.api_core import retry
-from google.cloud import translate_v2
+from google.cloud import translate
 from google.cloud import vision
 from google.cloud import language
+from google.cloud import speech
+from google.cloud import texttospeech
 
 
 TEXT = """
@@ -27,54 +22,12 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-# Setup test cases
-_DEFAULT_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
-
-credentials, project = google.auth.default(scopes=_DEFAULT_SCOPES)
-http = httplib2.Http()
-authed_http = google_auth_httplib2.AuthorizedHttp(credentials, http=http)
-
-client_annotator = vision.ImageAnnotatorClient(credentials=credentials)
-client_translate = translate_v2.Client(credentials=credentials)
-client_natural_language = language.LanguageServiceClient()
-
-
-def test_annotate_image():
-    response = client_annotator.annotate_image(
-        request={
-            'image': {'source': {'image_uri': 'gs://gcp_vision_refernece_image/logo.png'}},
-            'features': [{'type': vision.enums.Feature.Type.LOGO_DETECTION}],
-        }
-    )
-    return response.logo_annotations[0].description
-
-
-def test_translate():
-    response = client_translate.translate(TEXT, target_language="PL")['translatedText']
-    return response
-
-
-def text_natural_language():
-
-    document = language.types.Document(
-        content=TEXT,
-        type=language.enums.Document.Type.PLAIN_TEXT
-    )
-
-    annotations = client_natural_language.analyze_sentiment(document=document)
-    return annotations
-
-
-TEST_FNS = [
-    text_natural_language,
-    # test_annotate_image,
-    # test_translate
-]
-
 # Setup retry mechanism
 INVALID_KEYS = [
     'DefaultRequestsPerMinutePerProject',
-    'DefaultRequestsPerMinutePerProject'
+    'DefaultRequestsPerMinutePerUser',
+    'RequestsPerMinutePerProject',
+    "Resource has been exhausted (e.g. check quota).",
 ]
 INVALID_REASONS = [
     'userRateLimitExceeded',
@@ -108,24 +61,158 @@ class retry_if_temporary_quota(tenacity.retry_if_exception):
         super(retry_if_temporary_quota, self).__init__(is_soft_quota_exception)
 
 
-# Test code
-for fn in TEST_FNS:
-    for i in range(15):
-        print("I =", i)
+def quota_retry(*args, **kwargs):
+    #
+    return tenacity.retry(
+        wait=tenacity.wait_exponential(multiplier=1, max=100),
+        retry=retry_if_temporary_quota(),
+        before=tenacity.before_log(logger, logging.DEBUG),
+        after=tenacity.after_log(logger, logging.DEBUG),
+    )(*args, **kwargs)
+
+
+class CloudQuotaSystemTestMixin(object):
+    def test_quota_exception_not_raise_exception(self):
+
+        @quota_retry
+        def decorated_fn():
+            return self.do_request()
+
+        r = decorated_fn()
         try:
 
-            @tenacity.retry(
-                wait=tenacity.wait_exponential(multiplier=1, max=100),
-                retry=retry_if_temporary_quota(),
-                before=tenacity.before_log(logger, logging.DEBUG),
-                after=tenacity.after_log(logger, logging.DEBUG),
-            )
-            def wrapped_fn():
-                r = fn()
-                logger.info("Result: %s", r)
-
-            wrapped_fn()
-            print("Success")
+            for i in range(20 - 1):
+                logger.debug("Retry no. %s", i + 1)
+                self.assertEqual(decorated_fn(), r)
         except Exception as e:
             import ipdb; ipdb.set_trace()
             print(e)
+            raise
+
+    def do_request(self):
+        raise NotImplemented("You must ovveride `do_request` method.")
+
+
+class CloudVisionQuotaSystemTestCase(unittest.TestCase, CloudQuotaSystemTestMixin):
+    @classmethod
+    def setUpClass(cls):
+        cls.client = vision.ImageAnnotatorClient()
+
+    def do_request(self):
+        response = self.client.annotate_image(
+            request={
+                'image': {'source': {'image_uri': 'gs://gcp_vision_refernece_image/logo.png'}},
+                'features': [{'type': vision.enums.Feature.Type.LOGO_DETECTION}],
+            }
+        )
+        return response.logo_annotations[0].description
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client = None
+
+
+class CloudTranslateQuotaSystemTestCase(unittest.TestCase, CloudQuotaSystemTestMixin):
+    @classmethod
+    def setUpClass(cls):
+        cls.client = translate.Client()
+
+    def do_request(self):
+        response = self.client.translate(TEXT, target_language="PL")['translatedText']
+        return response
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client = None
+
+
+class CloudNaturalLanguageQuotaSystemTestCase(unittest.TestCase, CloudQuotaSystemTestMixin):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.client = language.LanguageServiceClient()
+
+    def do_request(self):
+        document = language.types.Document(
+            content=TEXT,
+            type=language.enums.Document.Type.PLAIN_TEXT
+        )
+
+        annotations = self.client.analyze_sentiment(document=document)
+        return annotations.sentences[0].text.content
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client = None
+
+
+class CloudSpeechQuotaSystemTestCase(unittest.TestCase, CloudQuotaSystemTestMixin):
+    @classmethod
+    def setUpClass(cls):
+        cls.client_texttospeech = texttospeech.TextToSpeechClient()
+        cls.client = speech.SpeechClient()
+
+    def setUp(self):
+        self.file = tempfile.NamedTemporaryFile(suffix=".mp3", mode="wb")
+        input_text = texttospeech.types.SynthesisInput(text=TEXT)
+
+        voice = texttospeech.types.VoiceSelectionParams(
+            language_code='en-US',
+            ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE
+        )
+
+        audio_config = texttospeech.types.AudioConfig(
+            audio_encoding=texttospeech.enums.AudioEncoding.OGG_OPUS
+        )
+
+        response = self.client_texttospeech.synthesize_speech(input_text, voice, audio_config)
+        self.content = response.audio_content
+        self.file.write(self.content)
+        self.file.flush()
+
+    def do_request(self):
+        audio = speech.types.RecognitionAudio(content=self.content)
+        config = speech.types.RecognitionConfig(
+            encoding=speech.enums.RecognitionConfig.AudioEncoding.OGG_OPUS,
+            sample_rate_hertz=16000,
+            language_code='en-US'
+        )
+        response = self.client.recognize(config, audio)
+
+        return response.results[0].alternatives[0].transcript
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client_texttospeech = None
+        cls.client = None
+
+
+class CloudTextToSpeechQuoteSystemTestCase(unittest.TestCase, CloudQuotaSystemTestMixin):
+    @classmethod
+    def setUpClass(cls):
+        cls.client = texttospeech.TextToSpeechClient()
+
+    def do_request(self):
+        input_text = texttospeech.types.SynthesisInput(text=TEXT)
+
+        voice = texttospeech.types.VoiceSelectionParams(
+            language_code='en-US',
+            ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE
+        )
+
+        audio_config = texttospeech.types.AudioConfig(
+            audio_encoding=texttospeech.enums.AudioEncoding.MP3
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".mp3", mode="wb") as file:
+            response = self.client.synthesize_speech(input_text, voice, audio_config)
+
+            file.write(response.audio_content)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client = None
+
+
+if __name__ == '__main__':
+    unittest.main()

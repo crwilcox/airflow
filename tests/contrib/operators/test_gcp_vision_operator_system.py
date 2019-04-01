@@ -16,14 +16,17 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+import os
 import unittest
 
-from tests.contrib.utils.gcp_authenticator import GCP_AI_KEY
+from airflow.contrib.hooks.gcp_api_base_hook import CloudQuotaSystemTestMixin, GoogleCloudBaseHook
+from tests.contrib.utils.gcp_authenticator import GCP_AI_KEY, GcpAuthenticator
 from tests.contrib.operators.test_gcp_vision_operator_system_helper import GCPVisionTestHelper
 from tests.contrib.utils.base_gcp_system_test_case import SKIP_TEST_WARNING, DagGcpSystemTestCase
+from google.cloud import vision
 
 VISION_HELPER = GCPVisionTestHelper()
+GCP_ANNOTATE_IMAGE_URL = os.environ.get('GCP_VISION_ANNOTATE_IMAGE_URL', 'gs://bucket-name/image.png')
 
 
 @unittest.skipIf(DagGcpSystemTestCase.skip_check(GCP_AI_KEY), SKIP_TEST_WARNING)
@@ -57,3 +60,32 @@ class CloudVisionExampleDagsSystemTest(DagGcpSystemTestCase):
 
     def test_run_example_gcp_vision_annotate_image_dag(self):
         self._run_dag('example_gcp_vision_annotate_image')
+
+
+@unittest.skipIf(DagGcpSystemTestCase.skip_check(GCP_AI_KEY), SKIP_TEST_WARNING)
+class CloudVisionQuotaSystemTestCase(unittest.TestCase, CloudQuotaSystemTestMixin):
+    @classmethod
+    @GoogleCloudBaseHook._Decorators.provide_gcp_credential_file(key_path=GcpAuthenticator(GCP_AI_KEY).full_key_path)
+    def setUpClass(cls):
+        cls.client = vision.ImageAnnotatorClient()
+
+    def setUp(self):
+        super(CloudVisionQuotaSystemTestCase, self).setUp()
+        VISION_HELPER.create_bucket()
+
+    def tearDown(self):
+        VISION_HELPER.delete_bucket()
+        super(CloudVisionQuotaSystemTestCase, self).tearDown()
+
+    def do_request(self):
+        response = self.client.annotate_image(
+            request={
+                'image': {'source': {'image_uri': GCP_ANNOTATE_IMAGE_URL}},
+                'features': [{'type': vision.enums.Feature.Type.LOGO_DETECTION}],
+            }
+        )
+        return response.logo_annotations[0].description
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client = None

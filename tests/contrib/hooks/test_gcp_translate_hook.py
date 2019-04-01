@@ -19,13 +19,7 @@
 
 import unittest
 
-import six
-from google.api_core.exceptions import Forbidden
-import tenacity
-
 from airflow.contrib.hooks.gcp_translate_hook import CloudTranslateHook
-from airflow.contrib.hooks.gcp_translate_hook import retry_if_temporary_quota
-from airflow.exceptions import AirflowException
 from tests.contrib.utils.base_gcp_mock import mock_base_gcp_hook_default_project_id
 
 try:
@@ -35,57 +29,6 @@ except ImportError:
         import mock
     except ImportError:
         mock = None
-
-
-class NoForbiddenAfterCount(object):
-    """Holds counter state for invoking a method several times in a row."""
-
-    def __init__(self, count, **kwargs):
-        self.counter = 0
-        self.count = count
-        self.kwargs = kwargs
-
-    def __call__(self):
-        """Raise an Forbidden until after count threshold has been crossed.
-        Then return True.
-        """
-        if self.counter < self.count:
-            self.counter += 1
-            raise Forbidden(**self.kwargs)
-        return True
-
-
-@tenacity.retry(retry=retry_if_temporary_quota())
-def _retryable_test_with_temporare_quota_retry(thing):
-    return thing()
-
-
-class retry_if_temporary_quotaTestCase(unittest.TestCase):
-    def test_do_nothing_on_non_error(self):
-        r = _retryable_test_with_temporare_quota_retry(lambda: 42)
-        self.assertTrue(r, 42)
-
-    def test_retry_on_exception(self):
-        message = "POST https://translation.googleapis.com/language/translate/v2: User Rate Limit Exceeded"
-        errors = [
-            {
-                'message': 'User Rate Limit Exceeded',
-                'domain': 'usageLimits',
-                'reason': 'userRateLimitExceeded',
-            }
-        ]
-        _retryable_test_with_temporare_quota_retry(NoForbiddenAfterCount(5, message=message, errors=errors))
-
-    def test_raise_exception_on_non_quota_exception(self):
-        with six.assertRaisesRegex(self, Forbidden, "Daily Limit Exceeded"):
-            message = "POST https://translation.googleapis.com/language/translate/v2: Daily Limit Exceeded"
-            errors = [
-                {'message': 'Daily Limit Exceeded', 'domain': 'usageLimits', 'reason': 'dailyLimitExceeded'}
-            ]
-
-            _retryable_test_with_temporare_quota_retry(
-                NoForbiddenAfterCount(5, message=message, errors=errors)
-            )
 
 
 class TestCloudTranslateHook(unittest.TestCase):
